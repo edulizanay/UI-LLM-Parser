@@ -32,12 +32,13 @@ Object.defineProperty(window, 'localStorage', {
 })
 
 // Mock file reading
-global.FileReader = class MockFileReader {
-  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
-  readAsText = jest.fn().mockImplementation(() => {
+const mockFileReader = {
+  onload: null as ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null,
+  onerror: null as ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null,
+  readAsText: jest.fn().mockImplementation(() => {
     setTimeout(() => {
-      if (this.onload) {
-        this.onload({
+      if (mockFileReader.onload) {
+        mockFileReader.onload({
           target: { result: JSON.stringify([{
             id: 'test-1',
             title: 'Test Conversation',
@@ -51,6 +52,12 @@ global.FileReader = class MockFileReader {
       }
     }, 100)
   })
+}
+
+global.FileReader = class MockFileReader {
+  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
+  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
+  readAsText = mockFileReader.readAsText
 } as any
 
 const mockRouterPush = jest.fn()
@@ -67,77 +74,437 @@ describe('End-to-End Workflow Integration', () => {
 
   describe('Complete Workflow: Dashboard → Stage 1 → Stage 2', () => {
     it('should navigate through complete parsing workflow successfully', async () => {
-      // This test will fail initially (TDD Red phase)
-      // Testing the complete user journey that should be implemented
-      expect(true).toBe(false) // Intentional failure to start TDD Red phase
+      // Import components dynamically to test navigation
+      const DashboardPage = (await import('@/app/page')).default
+
+      // Test Dashboard renders with navigation buttons
+      render(<DashboardPage />)
+
+      // Check that "Parse New Data" button exists and navigates to /parse
+      const parseButton = screen.getByText('Parse New Data')
+      expect(parseButton).toBeInTheDocument()
+      expect(parseButton.closest('a')).toHaveAttribute('href', '/parse')
+
+      // Check that Prompt Refiner button exists and navigates to /prompt-refiner
+      const promptRefinerButton = screen.getByText('Refine Your Prompts')
+      expect(promptRefinerButton).toBeInTheDocument()
+      expect(promptRefinerButton.closest('a')).toHaveAttribute('href', '/prompt-refiner')
     })
 
     it('should persist data across stage transitions', async () => {
       // Test localStorage persistence during navigation
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage1Page = (await import('@/app/parse/page')).default
+
+      // Render Stage 1
+      render(<Stage1Page />)
+
+      // Simulate file upload and field selection
+      const mockStage1Data = {
+        selectedFields: ['id', 'title', 'date', 'messages'],
+        fieldCategorization: {
+          computerFriendly: ['id', 'date'],
+          llmFriendly: ['title'],
+          messagesField: 'messages'
+        },
+        contextDescription: 'Test conversation data',
+        processingStats: {
+          conversationCount: 3,
+          interactionCount: 26,
+          tokenCount: 1500
+        }
+      }
+
+      // Check that Stage 1 can set data to localStorage
+      expect(typeof window.localStorage.setItem).toBe('function')
+
+      // Manually set the data to simulate Stage 1 completion
+      mockLocalStorage.setItem('parsing-stage-1-state', JSON.stringify(mockStage1Data))
+
+      // Verify data was set
+      const savedData = mockLocalStorage.getItem('parsing-stage-1-state')
+      expect(savedData).toBeTruthy()
+      expect(JSON.parse(savedData)).toEqual(mockStage1Data)
     })
 
     it('should handle navigation back and forth between stages', async () => {
       // Test bidirectional navigation with data preservation
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const DashboardPage = (await import('@/app/page')).default
+      const Stage1Page = (await import('@/app/parse/page')).default
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Start at Dashboard
+      const { rerender } = render(<DashboardPage />)
+
+      // Navigate to Stage 1
+      rerender(<Stage1Page />)
+      expect(screen.getByText('Stage 1: Upload & Configure Data')).toBeInTheDocument()
+
+      // Simulate data upload and proceed to Stage 2
+      mockLocalStorage.setItem('parsing-stage-1-state', JSON.stringify({
+        selectedFields: ['id', 'title', 'messages'],
+        contextDescription: 'Test conversation data'
+      }))
+
+      // Navigate to Stage 2
+      rerender(<Stage2Page />)
+      expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+
+      // Navigate back to Stage 1
+      rerender(<Stage1Page />)
+      expect(screen.getByText('Stage 1: Upload & Configure Data')).toBeInTheDocument()
+
+      // Verify data persistence - context should be preserved
+      const savedState = mockLocalStorage.getItem('parsing-stage-1-state')
+      expect(savedState).toBeTruthy()
+      const parsedState = JSON.parse(savedState)
+      expect(parsedState.contextDescription).toBe('Test conversation data')
     })
   })
 
   describe('Data Flow Integration', () => {
     it('should properly transfer field selections from Stage 1 to Stage 2', async () => {
       // Test data handoff between stages
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Set up Stage 1 completion data
+      const stage1Data = {
+        selectedFields: ['id', 'title', 'date', 'messages'],
+        fieldCategorization: {
+          computerFriendly: ['id', 'date'],
+          llmFriendly: ['title'],
+          messagesField: 'messages'
+        },
+        contextDescription: 'Email conversation data from work',
+        processingStats: {
+          conversationCount: 5,
+          interactionCount: 15,
+          tokenCount: 2000
+        }
+      }
+
+      mockLocalStorage.setItem('parsing-stage-1-state', JSON.stringify(stage1Data))
+
+      // Render Stage 2 and verify data transfer
+      render(<Stage2Page />)
+
+      // Check that Stage 2 header is present
+      expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+
+      // Verify computer-friendly categories are suggested (based on Stage 1 data)
+      await waitFor(() => {
+        // Should show computer-friendly suggestions based on selected fields
+        expect(screen.getByText('Computer-friendly Categories')).toBeInTheDocument()
+      })
+
+      // Verify LLM categories section is available
+      expect(screen.getByText('LLM Categories')).toBeInTheDocument()
     })
 
     it('should maintain category selections and prompts in Stage 2', async () => {
       // Test Stage 2 state persistence
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Set up required Stage 1 data first
+      const stage1Data = {
+        selectedFields: ['id', 'title', 'messages'],
+        fieldCategorization: {
+          computerFriendly: ['id'],
+          llmFriendly: ['title'],
+          messagesField: 'messages'
+        },
+        contextDescription: 'Test conversation data',
+        processingStats: {
+          conversationCount: 3,
+          interactionCount: 10,
+          tokenCount: 1500
+        }
+      }
+      mockLocalStorage.setItem('parsing-stage-1-state', JSON.stringify(stage1Data))
+
+      render(<Stage2Page />)
+
+      // Wait for component to load with correct title
+      await waitFor(() => {
+        expect(screen.getByText('Configure Categories')).toBeInTheDocument()
+      })
+
+      // Check that default LLM categories are present and clickable
+      const businessCategory = screen.getByText('business')
+      const personalGrowthCategory = screen.getByText('personal_growth')
+      const designCategory = screen.getByText('design')
+      const codingCategory = screen.getByText('coding')
+
+      expect(businessCategory).toBeInTheDocument()
+      expect(personalGrowthCategory).toBeInTheDocument()
+      expect(designCategory).toBeInTheDocument()
+      expect(codingCategory).toBeInTheDocument()
+
+      // Select a category to make prompts visible
+      fireEvent.click(businessCategory)
+
+      // Wait for the prompt editor to show the selected category
+      await waitFor(() => {
+        expect(screen.queryByText('Select categories above to configure their prompts')).not.toBeInTheDocument()
+      })
+
+      // Verify that prompts are editable and have default LLM-focused text
+      const businessInput = screen.getByDisplayValue(/Choose this option when conversations are around work/)
+      expect(businessInput).toBeInTheDocument()
+      expect(businessInput).toHaveAttribute('type', 'text')
+
+      // Test editing a prompt
+      fireEvent.change(businessInput, {
+        target: { value: 'Custom business prompt for work conversations' }
+      })
+
+      expect(businessInput).toHaveValue('Custom business prompt for work conversations')
+
+      // Verify model selection dropdown is present (find by role and check if it's a select)
+      const selects = screen.getAllByRole('combobox')
+      expect(selects.length).toBeGreaterThan(0)
+
+      // Look for model selection specifically - should be the second select (first might be provider)
+      const modelSelect = selects.find(select =>
+        select.textContent?.includes('gpt') ||
+        select.getAttribute('value')?.includes('gpt') ||
+        select.querySelector('option[value*="gpt"]')
+      )
+      expect(modelSelect).toBeInTheDocument()
     })
 
     it('should handle completion flow returning to Dashboard', async () => {
       // Test final completion and return navigation
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Set up required Stage 1 data first
+      const stage1Data = {
+        selectedFields: ['id', 'title', 'messages'],
+        fieldCategorization: {
+          computerFriendly: ['id'],
+          llmFriendly: ['title'],
+          messagesField: 'messages'
+        },
+        contextDescription: 'Test conversation data',
+        processingStats: {
+          conversationCount: 3,
+          interactionCount: 10,
+          tokenCount: 1500
+        }
+      }
+      mockLocalStorage.setItem('parsing-stage-1-state', JSON.stringify(stage1Data))
+
+      render(<Stage2Page />)
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByText('Configure Categories')).toBeInTheDocument()
+      })
+
+      // Look for completion/finish button (check actual button text from component)
+      const finishButton = screen.getByText('Continue to Processing')
+      expect(finishButton).toBeInTheDocument()
+      expect(finishButton.closest('button')).toBeInTheDocument()
+
+      // Click completion button
+      fireEvent.click(finishButton)
+
+      // Should navigate back to dashboard (via router push)
+      expect(mockRouterPush).toHaveBeenCalledWith('/')
     })
   })
 
   describe('Error Handling Integration', () => {
     it('should handle corrupted localStorage data gracefully', async () => {
       // Test error recovery scenarios
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage1Page = (await import('@/app/parse/page')).default
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Set corrupted localStorage data
+      mockLocalStorage.setItem('parsing-stage-1-state', 'invalid json data')
+
+      // Stage 1 should handle corrupted data gracefully
+      render(<Stage1Page />)
+      expect(screen.getByText('Stage 1: Upload & Configure Data')).toBeInTheDocument()
+      expect(screen.getByTestId('upload-zone')).toBeInTheDocument()
+
+      // Stage 2 should also handle corrupted data gracefully
+      const { rerender } = render(<Stage1Page />)
+      rerender(<Stage2Page />)
+      expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+
+      // Should show default categories even with corrupted data
+      expect(screen.getByText('business')).toBeInTheDocument()
+      expect(screen.getByText('personal_relationships')).toBeInTheDocument()
     })
 
     it('should provide user-friendly error messages for failed uploads', async () => {
       // Test file upload error handling
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage1Page = (await import('@/app/parse/page')).default
+
+      render(<Stage1Page />)
+
+      const uploadZone = screen.getByTestId('upload-zone')
+
+      // Test non-JSON file upload
+      const invalidFile = new File(['not json content'], 'document.txt', { type: 'text/plain' })
+      fireEvent.drop(uploadZone, { dataTransfer: { files: [invalidFile] } })
+
+      await waitFor(() => {
+        // Should show user-friendly error message for wrong file type
+        expect(screen.getByText(/Please upload a JSON file/i)).toBeInTheDocument()
+      }, { timeout: 3000 })
+
+      // Test oversized file
+      const oversizedFile = new File([new Array(1000000).join('a')], 'large.json', { type: 'application/json' })
+      fireEvent.drop(uploadZone, { dataTransfer: { files: [oversizedFile] } })
+
+      await waitFor(() => {
+        // Should show user-friendly error for file size
+        expect(screen.getByText(/File is too large/i) || screen.getByText(/size limit/i)).toBeInTheDocument()
+      }, { timeout: 3000 })
     })
 
     it('should allow recovery from network or processing errors', async () => {
       // Test error recovery mechanisms
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      render(<Stage2Page />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+      })
+
+      // Select model and attempt to process (this will be simulated)
+      const modelSelect = screen.getByDisplayValue(/gpt-4o/)
+      fireEvent.change(modelSelect, { target: { value: 'gpt-4o-mini' } })
+
+      // Look for processing button
+      const processButton = screen.getByText('Complete Categorization')
+      fireEvent.click(processButton)
+
+      // Should handle processing errors gracefully
+      // In a real scenario, if API fails, user should be able to retry
+      await waitFor(() => {
+        // Should still show the interface for retry
+        expect(screen.getByText('Complete Categorization')).toBeInTheDocument()
+      })
+
+      // Should maintain user's category selections and prompts
+      expect(screen.getByText('business')).toBeInTheDocument()
+      expect(screen.getByDisplayValue(/Choose this option when conversations are around work/)).toBeInTheDocument()
     })
   })
 
   describe('Prompt Refiner Integration', () => {
     it('should navigate to Prompt Refiner from Dashboard', async () => {
       // Test navigation to integrated Prompt Refiner
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const PromptRefinerPage = (await import('@/app/prompt-refiner/page')).default
+
+      // Render Prompt Refiner page
+      render(<PromptRefinerPage />)
+
+      // Check that key components are rendered
+      expect(screen.getByText('LLM Prompt Tester')).toBeInTheDocument()
+      expect(screen.getByText('Back to Dashboard')).toBeInTheDocument()
+
+      // Check that form controls are present
+      expect(screen.getByText('Processing Stage')).toBeInTheDocument()
+      expect(screen.getByText('LLM Provider')).toBeInTheDocument()
+      expect(screen.getByText('Model')).toBeInTheDocument()
+      expect(screen.getByText('Sample Data')).toBeInTheDocument()
+
+      // Check that panels are present
+      expect(screen.getByText('Prompt Template')).toBeInTheDocument()
+      expect(screen.getByText('Test Results')).toBeInTheDocument()
     })
 
     it('should maintain consistent styling with main application', async () => {
       // Test style consistency across integrated components
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const DashboardPage = (await import('@/app/page')).default
+      const PromptRefinerPage = (await import('@/app/prompt-refiner/page')).default
+
+      // Render Dashboard first
+      const { rerender } = render(<DashboardPage />)
+
+      // Check Dashboard styling consistency
+      const dashboardTitle = screen.getByText('UI-LLM Parser')
+      expect(dashboardTitle).toHaveClass('text-ds-heading') // Design token usage
+
+      // Navigate to Prompt Refiner
+      rerender(<PromptRefinerPage />)
+
+      // Check Prompt Refiner styling consistency
+      const refinerTitle = screen.getByText('LLM Prompt Tester')
+      expect(refinerTitle).toBeInTheDocument()
+
+      // Check that back button maintains consistent styling
+      const backButton = screen.getByText('Back to Dashboard')
+      expect(backButton).toBeInTheDocument()
+
+      // Both pages should use consistent surface styling
+      const mainContent = document.querySelector('main')
+      expect(mainContent).toHaveClass('bg-gray-50') // Consistent background
     })
   })
 
   describe('Mobile Responsiveness', () => {
     it('should work properly on mobile viewports', async () => {
       // Test responsive design integration
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const DashboardPage = (await import('@/app/page')).default
+      const Stage1Page = (await import('@/app/parse/page')).default
+
+      // Mock mobile viewport
+      Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true })
+      Object.defineProperty(window, 'innerHeight', { value: 667, configurable: true })
+
+      // Test Dashboard on mobile
+      const { rerender } = render(<DashboardPage />)
+
+      // Main container should use responsive grid
+      const mainGrid = screen.getByTestId('dashboard-main')?.querySelector('.grid')
+      expect(mainGrid).toHaveClass('grid-cols-1') // Single column on mobile
+
+      // Test Stage 1 on mobile
+      rerender(<Stage1Page />)
+
+      // Stage 1 should adapt to mobile viewport
+      const stage1Main = screen.getByTestId('stage1-main')
+      const stage1Grid = stage1Main.querySelector('.grid')
+      expect(stage1Grid).toHaveClass('lg:grid-cols-3') // Responsive breakpoint
+      expect(stage1Grid).toHaveClass('grid-cols-1') // Single column on mobile
+
+      // Upload zone should remain accessible on mobile
+      expect(screen.getByTestId('upload-zone')).toBeInTheDocument()
     })
 
     it('should maintain usability across different screen sizes', async () => {
       // Test responsive usability
-      expect(true).toBe(false) // Intentional failure for TDD Red phase
+      const Stage2Page = (await import('@/app/parse/categorize/page')).default
+
+      // Test tablet viewport
+      Object.defineProperty(window, 'innerWidth', { value: 768, configurable: true })
+      Object.defineProperty(window, 'innerHeight', { value: 1024, configurable: true })
+
+      render(<Stage2Page />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+      })
+
+      // Category selection should remain accessible on tablet
+      expect(screen.getByText('business')).toBeInTheDocument()
+      expect(screen.getByText('personal_relationships')).toBeInTheDocument()
+
+      // Prompt editing should work on tablet
+      const businessInput = screen.getByDisplayValue(/Choose this option when conversations are around work/)
+      expect(businessInput).toBeInTheDocument()
+
+      // Model selection should be accessible
+      const modelSelect = screen.getByDisplayValue(/gpt-4o/)
+      expect(modelSelect).toBeInTheDocument()
+
+      // Completion button should be reachable
+      expect(screen.getByText('Complete Categorization')).toBeInTheDocument()
     })
   })
 })

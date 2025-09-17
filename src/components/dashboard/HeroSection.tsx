@@ -8,16 +8,10 @@ import { Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function HeroSection() {
-  const router = useRouter()
-
-  const handleParseClick = () => {
-    router.push('/parse')
-  }
-
   return (
     <div className="flex">
-      <button
-        onClick={handleParseClick}
+      <Link
+        href="/parse"
         className="inline-flex items-center gap-4 bg-primary-blue hover:bg-primary-blue-hover
                  text-white px-12 py-6 rounded-ds-lg text-xl font-medium
                  transition-all duration-200 hover:-translate-y-px
@@ -25,7 +19,7 @@ export function HeroSection() {
       >
         Parse New Data
         <Upload data-testid="upload-icon" className="w-8 h-8" />
-      </button>
+      </Link>
     </div>
   )
 }
