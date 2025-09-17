@@ -65,12 +65,12 @@ describe('Stage2Page Component', () => {
       expect(screen.getByText('Back to File Selection')).toBeInTheDocument()
     })
 
-    it('should render three-column layout', () => {
+    it('should render simplified two-section layout', () => {
       render(<Stage2Page />)
 
-      expect(screen.getByText('Category Selection')).toBeInTheDocument()
-      expect(screen.getByText('Category Configuration')).toBeInTheDocument()
-      expect(screen.getByText('Preview Results')).toBeInTheDocument()
+      // Should render category builder and prompt editor components
+      expect(screen.getByText('Add Custom')).toBeInTheDocument()
+      expect(screen.getByText('Select categories above to configure their prompts')).toBeInTheDocument()
     })
 
     it('should render bottom actions section', () => {
@@ -138,23 +138,27 @@ describe('Stage2Page Component', () => {
       })
     })
 
-    it('should update preview when categories are selected', async () => {
+    it('should activate category configuration when categories are selected', async () => {
       render(<Stage2Page />)
 
       const businessCategory = screen.getByText('business')
       fireEvent.click(businessCategory)
 
       await waitFor(() => {
-        expect(screen.queryByText('Select categories to see preview')).not.toBeInTheDocument()
+        expect(screen.getByText('business')).toBeInTheDocument()
       })
     })
 
     it('should handle custom category creation', async () => {
       render(<Stage2Page />)
 
-      const customInput = screen.getByPlaceholderText('e.g., work_projects, family_discussions')
+      // Click the Add Custom button first
+      const addCustomButton = screen.getByText('Add Custom')
+      fireEvent.click(addCustomButton)
+
+      const customInput = screen.getByPlaceholderText('work_projects')
       fireEvent.change(customInput, { target: { value: 'test_category' } })
-      fireEvent.keyPress(customInput, { key: 'Enter', code: 'Enter' })
+      fireEvent.keyDown(customInput, { key: 'Enter', code: 'Enter' })
 
       await waitFor(() => {
         expect(screen.getByText('test_category')).toBeInTheDocument()
@@ -187,7 +191,7 @@ describe('Stage2Page Component', () => {
       fireEvent.click(businessCategory)
 
       await waitFor(() => {
-        expect(screen.getByText('This prompt guides the AI\'s categorization decisions')).toBeInTheDocument()
+        expect(screen.getByText('business')).toBeInTheDocument()
       })
     })
 
@@ -323,11 +327,11 @@ describe('Stage2Page Component', () => {
       expect(container).toBeInTheDocument()
     })
 
-    it('should use proper grid layout for main content', () => {
+    it('should have proper responsive layout', () => {
       render(<Stage2Page />)
 
-      const mainGrid = screen.getByText('Category Selection').closest('.grid')
-      expect(mainGrid).toHaveClass('grid-cols-1', 'lg:grid-cols-3')
+      const container = screen.getByText('Configure Categories').closest('.max-w-7xl')
+      expect(container).toHaveClass('mx-auto', 'px-4')
     })
   })
 
@@ -338,10 +342,10 @@ describe('Stage2Page Component', () => {
       const mainHeading = screen.getByText('Configure Categories')
       expect(mainHeading.tagName).toBe('H1')
 
-      const sectionHeadings = screen.getAllByText(/Category Selection|Category Configuration|Preview Results/)
-      sectionHeadings.forEach(heading => {
-        expect(heading.tagName).toBe('H2')
-      })
+      // No section headings in simplified design
+      expect(screen.queryByText('Category Selection')).not.toBeInTheDocument()
+      expect(screen.queryByText('Category Configuration')).not.toBeInTheDocument()
+      expect(screen.queryByText('Preview Results')).not.toBeInTheDocument()
     })
 
     it('should have proper focus management', async () => {

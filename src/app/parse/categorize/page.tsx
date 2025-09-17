@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { CategoryBuilder } from '@/components/categorization/CategoryBuilder'
 import { PromptEditor } from '@/components/categorization/PromptEditor'
-import { PreviewPanel } from '@/components/categorization/PreviewPanel'
 
 interface SelectedCategory {
   type: 'computer_friendly' | 'llm_friendly' | 'custom'
@@ -86,27 +85,6 @@ export function Stage2Page() {
     }
   ]
 
-  const previewData = [
-    {
-      conversation_id: '4d8ad794-2efe-4612-ad7b-33d8f1abfab6',
-      conversation_title: 'Inquiring About Pricing Difference and Discount',
-      sample_content: 'Answer Spencer that I see it\'s more expensive than the website, if he could clarify the difference with the website. Ask him if he\'s willing to make us a discount...',
-      predicted_tags: ['business', 'negotiation']
-    },
-    {
-      conversation_id: 'ca7e1835-b085-4048-b4d5-f9fe2a99c78e',
-      conversation_title: 'Learning Python Data Structures',
-      sample_content: 'Hey Claude, I want to learn more about Python dictionaries and how to use them effectively in my code.',
-      predicted_tags: ['personal_growth', 'coding', 'programming']
-    }
-  ]
-
-  const statistics = {
-    conversations: 3,
-    categories: selectedCategories.length,
-    avg_tags: 2.1,
-    coverage: 94
-  }
 
   // Load Stage 1 data on mount
   useEffect(() => {
@@ -246,41 +224,26 @@ export function Stage2Page() {
           </div>
         </nav>
 
-        {/* Main Three-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-          {/* Left Column - Category Selection */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Selection</h2>
-            <CategoryBuilder
-              computerCategories={computerCategories}
-              llmCategories={llmCategories}
-              selectedCategories={selectedCategories}
-              onCategorySelect={handleCategorySelect}
-              onCategoryRemove={handleCategoryRemove}
-              onCustomCategoryAdd={handleCustomCategoryAdd}
-            />
-          </div>
+        {/* Top Section - Category Selection */}
+        <div className="mb-8">
+          <CategoryBuilder
+            computerCategories={computerCategories}
+            llmCategories={llmCategories}
+            selectedCategories={selectedCategories}
+            onCategorySelect={handleCategorySelect}
+            onCategoryRemove={handleCategoryRemove}
+            onCustomCategoryAdd={handleCustomCategoryAdd}
+          />
+        </div>
 
-          {/* Center Column - Category Configuration */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Configuration</h2>
-            <PromptEditor
-              selectedCategories={selectedCategories}
-              activeCategoryId={activeCategoryId}
-              onCategorySelect={setActiveCategoryId}
-              onPromptEdit={handlePromptEdit}
-            />
-          </div>
-
-          {/* Right Column - Preview Results */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Preview Results</h2>
-            <PreviewPanel
-              selectedCategories={selectedCategories}
-              previewData={previewData}
-              statistics={statistics}
-            />
-          </div>
+        {/* Main Section - Category Configuration */}
+        <div className="mb-12">
+          <PromptEditor
+            selectedCategories={selectedCategories}
+            activeCategoryId={activeCategoryId}
+            onCategorySelect={setActiveCategoryId}
+            onPromptEdit={handlePromptEdit}
+          />
         </div>
 
         {/* Bottom Actions */}

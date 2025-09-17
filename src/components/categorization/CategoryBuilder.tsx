@@ -1,10 +1,10 @@
-// ABOUTME: Category selection component for Stage 2 categorization interface
-// ABOUTME: Handles computer-friendly, LLM, and custom category proposals with selection UI
+// ABOUTME: Horizontal category selection bar for Stage 2 categorization interface
+// ABOUTME: Simplified pill-based selection with computer-friendly, LLM, and custom categories
 
 'use client'
 
 import { useState } from 'react'
-import { Database, Brain, X } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
 
 interface ComputerCategory {
   field_name: string
@@ -48,6 +48,7 @@ export function CategoryBuilder({
   onCustomCategoryAdd
 }: CategoryBuilderProps) {
   const [customInput, setCustomInput] = useState('')
+  const [showCustomInput, setShowCustomInput] = useState(false)
 
   const isSelected = (type: string, id: string) => {
     return selectedCategories.some(cat => cat.type === type && cat.id === id)
@@ -57,139 +58,157 @@ export function CategoryBuilder({
     if (e.key === 'Enter' && customInput.trim()) {
       onCustomCategoryAdd(customInput.trim())
       setCustomInput('')
+      setShowCustomInput(false)
+    }
+    if (e.key === 'Escape') {
+      setCustomInput('')
+      setShowCustomInput(false)
     }
   }
 
-  const getCategoryPillColor = (type: string) => {
-    switch (type) {
-      case 'computer_friendly':
-        return 'bg-blue-100 text-blue-800'
-      case 'llm_friendly':
-        return 'bg-red-100 text-red-800'
-      case 'custom':
-        return 'bg-gray-100 text-gray-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  const getCategoryPillColor = (type: string, isSelected: boolean = false) => {
+    if (isSelected) {
+      switch (type) {
+        case 'computer_friendly':
+          return 'bg-blue-100 text-blue-800 border-blue-300'
+        case 'llm_friendly':
+          return 'bg-red-100 text-red-800 border-red-300'
+        case 'custom':
+          return 'bg-gray-100 text-gray-800 border-gray-300'
+        default:
+          return 'bg-gray-100 text-gray-800 border-gray-300'
+      }
+    } else {
+      switch (type) {
+        case 'computer_friendly':
+          return 'bg-white text-blue-700 border-blue-200 hover:bg-blue-50'
+        case 'llm_friendly':
+          return 'bg-white text-red-700 border-red-200 hover:bg-red-50'
+        default:
+          return 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+      }
     }
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-5">
-      {/* Computer-Friendly Categories Section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Database data-testid="database-icon" className="w-4 h-4 text-blue-700" />
-          <h3 className="text-base font-semibold text-blue-700">From Your Data</h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">Categories based on your file structure</p>
+    <div className="bg-white rounded-lg shadow-sm border p-6">
+      {/* Horizontal Category Selection */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Computer-friendly categories */}
+        {computerCategories.map((category) => {
+          const categoryId = category.field_name
+          const categoryName = `${category.field_name.charAt(0).toUpperCase() + category.field_name.slice(1)}-based`
+          const selected = isSelected('computer_friendly', categoryId)
 
-        <div className="space-y-2">
-          {computerCategories.map((category) => {
-            const categoryId = category.field_name
-            const categoryName = `${category.field_name.charAt(0).toUpperCase() + category.field_name.slice(1)}-based`
-            const selected = isSelected('computer_friendly', categoryId)
+          return (
+            <button
+              key={categoryId}
+              onClick={() => {
+                if (selected) {
+                  onCategoryRemove({
+                    type: 'computer_friendly',
+                    id: categoryId,
+                    name: categoryName
+                  })
+                } else {
+                  onCategorySelect({
+                    type: 'computer_friendly',
+                    id: categoryId,
+                    name: categoryName,
+                    field_name: category.field_name,
+                    categories: category.categories
+                  })
+                }
+              }}
+              className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('computer_friendly', selected)}`}
+              aria-label={selected ? `Remove ${categoryName} category` : `Add ${categoryName} category`}
+            >
+              {categoryName}
+            </button>
+          )
+        })}
 
-            return (
-              <button
-                key={categoryId}
-                onClick={() => onCategorySelect({
-                  type: 'computer_friendly',
-                  id: categoryId,
-                  name: categoryName,
-                  field_name: category.field_name,
-                  categories: category.categories
-                })}
-                className={`w-full p-3 text-left border rounded-md transition-all duration-200 ${
-                  selected
-                    ? 'bg-blue-100 border-blue-400 text-blue-800'
-                    : 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300'
-                }`}
-                aria-label={`Add ${categoryName} category`}
-              >
-                <div className="font-medium">{categoryName}</div>
-                <div className="text-sm opacity-75">{category.distinct_count} time periods</div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+        {/* LLM categories */}
+        {llmCategories.map((category) => {
+          const selected = isSelected('llm_friendly', category.category_name)
 
-      {/* LLM Categories Section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Brain data-testid="brain-icon" className="w-4 h-4 text-red-700" />
-          <h3 className="text-base font-semibold text-red-700">Content Categories</h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">AI will analyze conversation content</p>
+          return (
+            <button
+              key={category.category_name}
+              onClick={() => {
+                if (selected) {
+                  onCategoryRemove({
+                    type: 'llm_friendly',
+                    id: category.category_name,
+                    name: category.category_name
+                  })
+                } else {
+                  onCategorySelect({
+                    type: 'llm_friendly',
+                    id: category.category_name,
+                    name: category.category_name,
+                    editable_prompt: category.editable_prompt
+                  })
+                }
+              }}
+              className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('llm_friendly', selected)}`}
+              aria-label={selected ? `Remove ${category.category_name} category` : `Add ${category.category_name} category`}
+            >
+              {category.category_name}
+            </button>
+          )
+        })}
 
-        <div className="space-y-2">
-          {llmCategories.map((category) => {
-            const selected = isSelected('llm_friendly', category.category_name)
-
-            return (
-              <button
-                key={category.category_name}
-                onClick={() => onCategorySelect({
-                  type: 'llm_friendly',
-                  id: category.category_name,
-                  name: category.category_name,
-                  editable_prompt: category.editable_prompt
-                })}
-                className={`w-full p-3 text-left border rounded-md transition-all duration-200 ${
-                  selected
-                    ? 'bg-red-100 border-red-400 text-red-800'
-                    : 'bg-white border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300'
-                }`}
-                aria-label={`Add ${category.category_name} category`}
-              >
-                <div className="font-medium">{category.category_name}</div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Custom Category Section */}
-      <div className="mb-6">
-        <h3 className="text-base font-semibold text-gray-700 mb-3">Custom Categories</h3>
-        <div>
+        {/* Custom category input */}
+        {showCustomInput ? (
           <input
             type="text"
             value={customInput}
             onChange={(e) => setCustomInput(e.target.value)}
-            onKeyPress={handleCustomSubmit}
-            placeholder="e.g., work_projects, family_discussions"
-            className="w-full p-3 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+            onKeyDown={handleCustomSubmit}
+            onBlur={() => {
+              if (!customInput.trim()) {
+                setShowCustomInput(false)
+              }
+            }}
+            placeholder="work_projects"
+            className="px-3 py-2 border border-gray-300 rounded-full text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none min-w-32"
+            autoFocus
           />
-          <p className="text-xs text-gray-500 mt-2">Press Enter to add category</p>
-        </div>
+        ) : (
+          <button
+            onClick={() => setShowCustomInput(true)}
+            className="px-4 py-2 rounded-full border border-dashed border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-800 font-medium text-sm transition-all duration-200 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Custom
+          </button>
+        )}
       </div>
 
-      {/* Selected Categories Summary */}
-      <div className="pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Selected Categories</h4>
-        <div className="flex flex-wrap gap-2">
-          {selectedCategories.map((category) => (
-            <div
-              key={`${category.type}-${category.id}`}
-              data-category-id={category.id}
-              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getCategoryPillColor(category.type)}`}
-            >
-              <span>{category.name}</span>
-              <button
-                onClick={() => onCategoryRemove(category)}
-                className="hover:bg-black hover:bg-opacity-10 rounded-full p-0.5"
-                aria-label={`Remove ${category.name} category`}
+      {/* Selected Categories - only show if any are selected */}
+      {selectedCategories.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2">
+            {selectedCategories.map((category) => (
+              <div
+                key={`${category.type}-${category.id}`}
+                data-category-id={category.id}
+                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getCategoryPillColor(category.type, true)}`}
               >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-          {selectedCategories.length === 0 && (
-            <p className="text-sm text-gray-500 italic">No categories selected yet</p>
-          )}
+                <span>{category.name}</span>
+                <button
+                  onClick={() => onCategoryRemove(category)}
+                  className="hover:bg-black hover:bg-opacity-10 rounded-full p-0.5 transition-colors duration-150"
+                  aria-label={`Remove ${category.name} category`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
