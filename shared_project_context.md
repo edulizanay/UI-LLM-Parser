@@ -72,6 +72,16 @@ This architecture prevents hardcoded values and ensures consistency across all c
 - **Status indicators:** 4-8px padding, 12px border-radius, small font
 - **Interactive feedback:** 0.2s transitions, hover state changes
 
+### Stage 1 Upload Interface Patterns
+- **Upload Zones:** 280px height, dashed borders (gray-300 default, blue active), 12px border-radius
+- **Field Categories:** Blue badges for computer-friendly, warm red for LLM-friendly, slate for messages
+- **Field Selection:** Checkboxes with real-time visual feedback, 40% opacity when unselected
+- **Messages Field Special:** Distinct slate background with hover states for collapse functionality
+- **Smart Placeholders:** Italic, 60% opacity, context-aware text generation
+- **Data Examples:** Monospace code blocks, 13px font, categorized field colors
+- **Processing Stats:** 3-column grid, large numbers (24px bold), small labels (12px uppercase)
+- **Context Panel:** Sticky positioning, 120px textarea, auto-generating placeholders
+
 ### Special Categorization Colors
 - **Computer-friendly fields:** Blue spectrum (`#1e40af` to `#3b82f6`)
 - **LLM-friendly fields:** Warm spectrum (`#dc2626` to `#f87171`)
@@ -231,6 +241,32 @@ interface FieldSelectionState {
 - URL params: `/parse?file=${fileName}&fields=${selectedFieldsCSV}`
 - Context API: `ParsingFlowContext` for cross-component state
 
+### Stage 1 Component Integration Requirements
+
+**DropZone.tsx Dependencies:**
+- File validation for JSON format
+- Drag/drop state management with visual feedback
+- Error handling for invalid files
+- Integration with file analysis system
+
+**FieldSelector.tsx Dependencies:**
+- Field categorization from `claude_stage1.json` mock data
+- Real-time statistics updates from `claude_stage1_statistics_scenarios.json`
+- Messages field collapse/expand functionality
+- Visual distinction for computer-friendly vs LLM-friendly fields
+
+**FilePreview.tsx Dependencies:**
+- JSON structure display with syntax highlighting
+- Field selection state management
+- Dynamic example filtering based on selected fields
+- Integration with field categorization colors
+
+**ContextPanel.tsx Dependencies:**
+- Smart placeholder generation from `context_placeholders.json`
+- File type detection and contextual suggestions
+- User input preservation and editing capabilities
+- Integration with Stage 2 data handoff
+
 ### Integration Touchpoints
 
 **Dashboard → Stage Flow:**
@@ -269,7 +305,7 @@ Parse Flow:
   - Navigation to parse flow and prompt refiner
 
 **Phase 3: Stage 1 Implementation**
-- [ ] **Yuki Handoff**: Upload interface and field selection designs
+- [x] **Yuki Handoff**: Upload interface and field selection designs ✅
 - [ ] **Planning Agent**: Core upload functionality
   - DropZone.tsx with drag/drop support
   - FilePreview.tsx with JSON structure display
@@ -318,6 +354,20 @@ Parse Flow:
 - mockData.ts: Mock data integration from JSON files
 - Test suite: 23 passing tests for design token architecture
 
+**✅ Phase 3 (Stage 1 Design & Implementation):**
+- Stage 1 complete design specifications with all component patterns
+- Upload interface patterns with drag/drop states
+- Field categorization system with computer/LLM-friendly visual distinction
+- Smart placeholder system for context generation
+- Processing statistics with real-time updates
+- Cross-stage data flow interface definitions
+- Complete Stage 1 implementation with TDD test coverage:
+  - DropZone.tsx: File upload with drag/drop and validation
+  - FieldSelector.tsx: Visual field categorization and selection
+  - FilePreview.tsx: JSON structure display with filtering
+  - ContextPanel.tsx: Smart placeholder generation and input
+  - Stage1Page: Complete workflow integration
+
 ### Established Patterns
 **Design Token Usage:**
 - All colors, spacing, typography through TypeScript imports
@@ -336,7 +386,7 @@ Parse Flow:
 
 **Yuki Design - Component Visual Specifications:**
 - Dashboard layout: Card grid vs. list view for projects
-- Upload interface: Side-by-side vs. tabbed layout for file preview
+- Upload interface: Side-by-side vs. tabbed layout for file preview ✅ (Decided: Side-by-side)
 - Stage navigation: Breadcrumbs vs. progress indicators
 
 ---
@@ -391,5 +441,13 @@ Logs:
 - 2025-09-17 - Planning Agent: Defined complete Next.js project structure with feature-based organization
 - 2025-09-17 - Planning Agent: Established state management approach using local state + persistence
 - 2025-09-17 - Planning Agent: Created development roadmap with clear Yuki handoff points for Phases 2-5
+- 2025-09-17 - Planning Agent: Completed Phase 2 Dashboard implementation with all components (HeroSection, ProcessingStatus, ProjectGrid, PromptRefinerSection, DragDropOverlay)
+- 2025-09-17 - Yuki: Designed Stage 1 upload and field selection interface with complete specifications
+- 2025-09-17 - Yuki: Established upload zone patterns with drag/drop states and visual feedback
+- 2025-09-17 - Yuki: Created field categorization system with blue/warm color coding and messages field special handling
+- 2025-09-17 - Yuki: Designed smart placeholder system for context panel with auto-generation capabilities
+- 2025-09-17 - Yuki: Specified processing statistics panel with real-time updates and collapse/expand behavior
+- 2025-09-17 - Yuki: Defined Stage 1 → Stage 2 data flow interface and integration requirements
+- 2025-09-17 - Planning Agent: Completed Stage 1 implementation with full TDD coverage (DropZone, FieldSelector, FilePreview, ContextPanel)
 
 *[Add entries chronologically]*
