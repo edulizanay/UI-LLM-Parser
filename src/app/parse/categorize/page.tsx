@@ -1,0 +1,320 @@
+// ABOUTME: Stage 2 categorization page implementing three-column layout design
+// ABOUTME: Category selection, prompt configuration, and real-time preview with Stage 1 integration
+
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { CategoryBuilder } from '@/components/categorization/CategoryBuilder'
+import { PromptEditor } from '@/components/categorization/PromptEditor'
+import { PreviewPanel } from '@/components/categorization/PreviewPanel'
+
+interface SelectedCategory {
+  type: 'computer_friendly' | 'llm_friendly' | 'custom'
+  id: string
+  name: string
+  field_name?: string
+  categories?: any[]
+  editable_prompt?: string
+}
+
+interface Stage1Data {
+  selectedFields: string[]
+  fieldCategorization: {
+    computerFriendly: string[]
+    llmFriendly: string[]
+    messagesField?: string
+  }
+  contextDescription: string
+  processingStats: {
+    conversationCount: number
+    interactionCount: number
+    tokenCount: number
+  }
+}
+
+// Export named component for testing
+export function Stage2Page() {
+  const router = useRouter()
+  const [stage1Data, setStage1Data] = useState<Stage1Data | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<SelectedCategory[]>([])
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  // Mock data from claude_stage2.json
+  const computerCategories = [
+    {
+      field_name: 'date',
+      distinct_count: 3,
+      categories: [
+        {
+          value: '2024-11-04',
+          conversation_count: 1,
+          sample_titles: ['Inquiring About Pricing Difference and Discount']
+        },
+        {
+          value: '2024-09-24',
+          conversation_count: 1,
+          sample_titles: ['Learning Python Data Structures']
+        },
+        {
+          value: '2024-10-15',
+          conversation_count: 1,
+          sample_titles: ['Design System Color Theory']
+        }
+      ]
+    }
+  ]
+
+  const llmCategories = [
+    {
+      category_name: 'business',
+      editable_prompt: 'choose this option if the conversation involves work, negotiations, professional matters, or business decisions'
+    },
+    {
+      category_name: 'personal_growth',
+      editable_prompt: 'choose this option if I\'m learning something new, developing skills, or seeking knowledge for personal development'
+    },
+    {
+      category_name: 'design',
+      editable_prompt: 'choose this option if the conversation is about design, user experience, visual aesthetics, or creative work'
+    },
+    {
+      category_name: 'coding',
+      editable_prompt: 'choose this option if the conversation involves programming, software development, technical implementation, or code-related discussions'
+    }
+  ]
+
+  const previewData = [
+    {
+      conversation_id: '4d8ad794-2efe-4612-ad7b-33d8f1abfab6',
+      conversation_title: 'Inquiring About Pricing Difference and Discount',
+      sample_content: 'Answer Spencer that I see it\'s more expensive than the website, if he could clarify the difference with the website. Ask him if he\'s willing to make us a discount...',
+      predicted_tags: ['business', 'negotiation']
+    },
+    {
+      conversation_id: 'ca7e1835-b085-4048-b4d5-f9fe2a99c78e',
+      conversation_title: 'Learning Python Data Structures',
+      sample_content: 'Hey Claude, I want to learn more about Python dictionaries and how to use them effectively in my code.',
+      predicted_tags: ['personal_growth', 'coding', 'programming']
+    }
+  ]
+
+  const statistics = {
+    conversations: 3,
+    categories: selectedCategories.length,
+    avg_tags: 2.1,
+    coverage: 94
+  }
+
+  // Load Stage 1 data on mount
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem('parsing-stage-1-state')
+      if (!savedData) {
+        router.push('/parse?error=complete-stage-1-first')
+        return
+      }
+
+      const parsedData = JSON.parse(savedData)
+      setStage1Data(parsedData)
+
+      // Load existing Stage 2 state if available
+      const stage2State = localStorage.getItem('parsing-stage-2-state')
+      if (stage2State) {
+        const { selectedCategories: savedCategories, activeCategoryId: savedActive } = JSON.parse(stage2State)
+        setSelectedCategories(savedCategories || [])
+        setActiveCategoryId(savedActive || null)
+      }
+    } catch (error) {
+      console.error('Error loading Stage 1 data:', error)
+      setError('Error loading previous stage data')
+    }
+  }, [router])
+
+  // Save Stage 2 state when it changes
+  useEffect(() => {
+    if (selectedCategories.length > 0 || activeCategoryId) {
+      localStorage.setItem('parsing-stage-2-state', JSON.stringify({
+        selectedCategories,
+        activeCategoryId
+      }))
+    }
+  }, [selectedCategories, activeCategoryId])
+
+  const handleCategorySelect = (category: SelectedCategory) => {
+    const isAlreadySelected = selectedCategories.some(
+      cat => cat.type === category.type && cat.id === category.id
+    )
+
+    if (!isAlreadySelected) {
+      const newCategories = [...selectedCategories, category]
+      setSelectedCategories(newCategories)
+      setActiveCategoryId(category.id)
+    }
+  }
+
+  const handleCategoryRemove = (categoryToRemove: SelectedCategory) => {
+    const newCategories = selectedCategories.filter(
+      cat => !(cat.type === categoryToRemove.type && cat.id === categoryToRemove.id)
+    )
+    setSelectedCategories(newCategories)
+
+    if (activeCategoryId === categoryToRemove.id) {
+      setActiveCategoryId(newCategories.length > 0 ? newCategories[0].id : null)
+    }
+  }
+
+  const handleCustomCategoryAdd = (categoryName: string) => {
+    const customCategory: SelectedCategory = {
+      type: 'custom',
+      id: categoryName,
+      name: categoryName,
+      editable_prompt: 'describe when conversations should receive this tag'
+    }
+    const newCategories = [...selectedCategories, customCategory]
+    setSelectedCategories(newCategories)
+    setActiveCategoryId(customCategory.id)
+  }
+
+  const handlePromptEdit = (categoryId: string, prompt: string) => {
+    setSelectedCategories(categories =>
+      categories.map(cat =>
+        cat.id === categoryId ? { ...cat, editable_prompt: prompt } : cat
+      )
+    )
+  }
+
+  const handleContinue = () => {
+    // Save final state and navigate to completion
+    localStorage.setItem('parsing-stage-2-complete', JSON.stringify({
+      selectedCategories,
+      completedAt: new Date().toISOString()
+    }))
+    router.push('/?completed=categorization-success')
+  }
+
+  const handleSkip = () => {
+    router.push('/?completed=categorization-skipped')
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-sm border max-w-md text-center">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h2>
+          <p className="text-gray-600 mb-4">Please complete file selection first</p>
+          <button
+            onClick={() => router.push('/parse')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Go back to Stage 1
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!stage1Data) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <main role="main" className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header Section */}
+        <nav role="navigation" className="mb-8">
+          <button
+            onClick={() => router.push('/parse')}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 mb-4"
+          >
+            <ArrowLeft data-testid="arrow-left-icon" className="w-5 h-5" />
+            Back to File Selection
+          </button>
+
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Configure Categories</h1>
+            <p className="text-gray-600">Define how your conversations should be categorized</p>
+          </div>
+        </nav>
+
+        {/* Main Three-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          {/* Left Column - Category Selection */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Selection</h2>
+            <CategoryBuilder
+              computerCategories={computerCategories}
+              llmCategories={llmCategories}
+              selectedCategories={selectedCategories}
+              onCategorySelect={handleCategorySelect}
+              onCategoryRemove={handleCategoryRemove}
+              onCustomCategoryAdd={handleCustomCategoryAdd}
+            />
+          </div>
+
+          {/* Center Column - Category Configuration */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Configuration</h2>
+            <PromptEditor
+              selectedCategories={selectedCategories}
+              activeCategoryId={activeCategoryId}
+              onCategorySelect={setActiveCategoryId}
+              onPromptEdit={handlePromptEdit}
+            />
+          </div>
+
+          {/* Right Column - Preview Results */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Preview Results</h2>
+            <PreviewPanel
+              selectedCategories={selectedCategories}
+              previewData={previewData}
+              statistics={statistics}
+            />
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <button
+                onClick={handleSkip}
+                className="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded-md transition-colors duration-200"
+              >
+                Skip Categorization
+              </button>
+              <p className="text-xs text-gray-500 italic mt-1">
+                Each new category will create an .md file
+              </p>
+            </div>
+
+            <button
+              onClick={handleContinue}
+              disabled={selectedCategories.length === 0}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+                selectedCategories.length === 0
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              Continue to Processing
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+export default Stage2Page
