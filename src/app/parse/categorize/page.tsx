@@ -69,19 +69,19 @@ export function Stage2Page() {
   const llmCategories = [
     {
       category_name: 'business',
-      editable_prompt: 'choose this option if the conversation involves work, negotiations, professional matters, or business decisions'
+      editable_prompt: 'Choose this option when conversations are around work, professional matters, or business decisions'
     },
     {
       category_name: 'personal_growth',
-      editable_prompt: 'choose this option if I\'m learning something new, developing skills, or seeking knowledge for personal development'
+      editable_prompt: 'Choose this option when conversations involve learning new skills, self-improvement, or educational content'
     },
     {
       category_name: 'design',
-      editable_prompt: 'choose this option if the conversation is about design, user experience, visual aesthetics, or creative work'
+      editable_prompt: 'Choose this option when conversations are about visual design, user experience, or creative work'
     },
     {
       category_name: 'coding',
-      editable_prompt: 'choose this option if the conversation involves programming, software development, technical implementation, or code-related discussions'
+      editable_prompt: 'Choose this option when conversations involve programming, software development, or technical implementation'
     }
   ]
 
@@ -149,7 +149,7 @@ export function Stage2Page() {
       type: 'custom',
       id: categoryName,
       name: categoryName,
-      editable_prompt: 'describe when conversations should receive this tag'
+      editable_prompt: 'Choose this option when conversations match this category'
     }
     const newCategories = [...selectedCategories, customCategory]
     setSelectedCategories(newCategories)
