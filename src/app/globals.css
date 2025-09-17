@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design System Variables from designTokens.ts */
+    --color-primary-blue: #3b82f6;
+    --color-primary-blue-hover: #2563eb;
+    --color-field-computer-friendly: #1e40af;
+    --color-field-llm-friendly: #dc2626;
+    --color-surface-background: #f8fafc;
+    --color-surface-white: #ffffff;
+    --color-text-primary: #334155;
+    --color-text-secondary: #64748b;
+    --spacing-base: 4px;
+    --border-radius-medium: 6px;
+    --transition-fast: 0.2s;
+
+    /* shadcn compatibility variables */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-surface-background text-text-primary;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  /* Field Type Categorization Utilities */
+  .field-computer-friendly {
+    @apply text-field-computer-friendly;
+  }
+
+  .field-llm-friendly {
+    @apply text-field-llm-friendly;
+  }
+
+  .field-dimmed {
+    opacity: 0.4;
+  }
+
+  .field-selected {
+    opacity: 0.8;
+  }
+
+  /* Panel Styling from Design System */
+  .ds-panel {
+    @apply bg-surface-white rounded-ds-lg shadow-ds-panel;
+    padding: var(--spacing-base);
+    padding: 16px;
+  }
+
+  /* Button Styling from Design System */
+  .ds-button {
+    @apply bg-primary-blue text-surface-white rounded-ds-md;
+    padding: 8px 12px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+  }
+
+  .ds-button:hover {
+    @apply bg-primary-blue-hover;
+  }
+
+  .ds-button:focus {
+    @apply shadow-ds-focus;
+  }
+
+  /* Messages Field Special Treatment */
+  .messages-field {
+    @apply bg-surface-messages;
+  }
+
+  .messages-field:hover {
+    @apply bg-surface-messages-hover;
+  }
+}

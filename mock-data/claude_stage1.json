@@ -1,0 +1,88 @@
+{
+  "source_file": "claude_conversations.json",
+  "analysis_timestamp": "2024-11-05T14:30:00.000Z",
+  "field_analysis": {
+    "id": {
+      "distinct_count": 3,
+      "type": "computer_friendly",
+      "sample_values": ["4d8ad794-2efe-4612-ad7b-33d8f1abfab6", "ca7e1835-b085-4048-b4d5-f9fe2a99c78e", "3f2a1b4c-5d6e-7f8g-9h0i-1j2k3l4m5n6o"],
+      "data_type": "string"
+    },
+    "source": {
+      "distinct_count": 1,
+      "type": "computer_friendly", 
+      "sample_values": ["claude"],
+      "data_type": "string"
+    },
+    "title": {
+      "distinct_count": 3,
+      "type": "llm_friendly",
+      "sample_values": ["Inquiring About Pricing Difference and Discount", "Learning Python Data Structures", "Design System Color Theory"],
+      "data_type": "string"
+    },
+    "date": {
+      "distinct_count": 3,
+      "type": "computer_friendly",
+      "sample_values": ["2024-11-04", "2024-09-24", "2024-10-15"],
+      "data_type": "date"
+    },
+    "message_count": {
+      "distinct_count": 3,
+      "type": "computer_friendly",
+      "sample_values": [8, 12, 6],
+      "data_type": "integer"
+    },
+    "duration_minutes": {
+      "distinct_count": 3,
+      "type": "computer_friendly",
+      "sample_values": [1138, 45, 23],
+      "data_type": "integer"
+    },
+    "messages": {
+      "distinct_count": 26,
+      "type": "llm_friendly",
+      "sample_values": ["Array of message objects", "Contains role, content, timestamp fields"],
+      "data_type": "array",
+      "aggregation_note": "Parent-child relationship - selecting this includes all message content"
+    },
+    "messages.role": {
+      "distinct_count": 2,
+      "type": "computer_friendly",
+      "sample_values": ["user", "assistant"],
+      "data_type": "string"
+    },
+    "messages.content": {
+      "distinct_count": 2847,
+      "type": "llm_friendly",
+      "sample_values": ["context:\\n\\n(attached emails + proposal)\\n\\nAnswer Spencer...", "Hey Claude, I want to learn more about Python dictionaries..."],
+      "data_type": "string"
+    },
+    "messages.timestamp": {
+      "distinct_count": 26,
+      "type": "computer_friendly",
+      "sample_values": ["2024-11-04T15:25:20.425636Z", "2024-09-24T14:30:00.000Z", "2024-10-15T16:20:00.000Z"],
+      "data_type": "datetime"
+    },
+    "metadata": {
+      "distinct_count": 3,
+      "type": "computer_friendly",
+      "sample_values": ["Object with processing info", "Contains source_file, timestamps, flags"],
+      "data_type": "object"
+    }
+  },
+  "processing_statistics": {
+    "total_conversations": 3,
+    "total_messages": 26,
+    "estimated_tokens": 15420,
+    "average_conversation_length": 8.67,
+    "date_range": {
+      "earliest": "2024-09-24",
+      "latest": "2024-11-04"
+    }
+  },
+  "recommended_selections": {
+    "conversation_level": ["id", "title", "date", "messages"],
+    "message_level": ["messages.role", "messages.content", "messages.timestamp"],
+    "metadata_level": ["source", "message_count", "duration_minutes"]
+  }
+}

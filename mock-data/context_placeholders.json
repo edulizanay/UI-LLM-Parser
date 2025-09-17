@@ -1,0 +1,36 @@
+{
+  "context_placeholders": {
+    "claude": "e.g., Claude conversations about various topics and learning sessions",
+    "whatsapp": "e.g., WhatsApp conversations from personal phone with family and friends",
+    "slack": "e.g., Slack messages from work channels and team communications",
+    "email": "e.g., Email threads from personal and professional correspondence",
+    "discord": "e.g., Discord conversations from gaming and community servers"
+  },
+  "detection_rules": {
+    "claude": {
+      "field_indicators": ["source", "title", "messages"],
+      "value_patterns": ["claude"]
+    },
+    "whatsapp": {
+      "field_indicators": ["contact_name", "phone_number", "chat_type"],
+      "value_patterns": ["whatsapp", "@s.whatsapp.net"]
+    },
+    "slack": {
+      "field_indicators": ["workspace_name", "channel_name", "username"],
+      "value_patterns": ["slack"]
+    },
+    "email": {
+      "field_indicators": ["subject", "from", "to", "thread_id"],
+      "value_patterns": ["@", "email"]
+    },
+    "discord": {
+      "field_indicators": ["server_name", "channel_name", "author_username"],
+      "value_patterns": ["discord"]
+    }
+  },
+  "styling": {
+    "font_style": "italic",
+    "opacity": 0.6,
+    "color": "text-muted-foreground"
+  }
+}

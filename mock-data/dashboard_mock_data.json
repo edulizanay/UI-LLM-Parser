@@ -1,0 +1,109 @@
+{
+  "_comment": "Mock data for Main Dashboard - Phase 2 implementation. Used for project cards, processing status, and dashboard statistics display",
+  "projects": [
+    {
+      "id": "proj_001",
+      "name": "Personal Conversations 2024",
+      "status": "completed",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "lastModified": "2024-01-20T14:45:00Z",
+      "fileCount": 3,
+      "categoriesCreated": 8,
+      "conversationsProcessed": 1247,
+      "outputFiles": [
+        "personal-2024-business.md",
+        "personal-2024-relationships.md",
+        "personal-2024-learning.md"
+      ]
+    },
+    {
+      "id": "proj_002",
+      "name": "Work Project Planning",
+      "status": "processing",
+      "createdAt": "2024-02-01T08:00:00Z",
+      "lastModified": "2024-02-01T16:30:00Z",
+      "fileCount": 1,
+      "categoriesCreated": 4,
+      "conversationsProcessed": 89,
+      "outputFiles": []
+    },
+    {
+      "id": "proj_003",
+      "name": "Family Chat Archive",
+      "status": "completed",
+      "createdAt": "2024-01-10T09:15:00Z",
+      "lastModified": "2024-01-12T11:20:00Z",
+      "fileCount": 2,
+      "categoriesCreated": 5,
+      "conversationsProcessed": 543,
+      "outputFiles": [
+        "family-celebrations.md",
+        "family-planning.md",
+        "family-daily.md"
+      ]
+    },
+    {
+      "id": "proj_004",
+      "name": "Learning Resources",
+      "status": "draft",
+      "createdAt": "2024-02-05T13:00:00Z",
+      "lastModified": "2024-02-05T13:00:00Z",
+      "fileCount": 1,
+      "categoriesCreated": 0,
+      "conversationsProcessed": 0,
+      "outputFiles": []
+    }
+  ],
+  "processingStatus": [
+    {
+      "projectId": "proj_002",
+      "fileName": "conversation_export_2023.json",
+      "stage": "categorizing",
+      "statusText": "Analyzing conversation patterns for \"technical_discussions\" category",
+      "progress": 67,
+      "estimatedTimeRemaining": 180,
+      "startedAt": "2024-02-01T16:27:00Z"
+    },
+    {
+      "projectId": "proj_005",
+      "fileName": "team_chats_q4.json",
+      "stage": "analyzing",
+      "statusText": "Detecting field types in uploaded JSON structure",
+      "progress": 23,
+      "estimatedTimeRemaining": 900,
+      "startedAt": "2024-02-01T16:15:00Z"
+    }
+  ],
+  "dashboardStats": {
+    "totalProjects": 4,
+    "activeProcessing": 2,
+    "completedToday": 1,
+    "totalConversationsProcessed": 1879
+  },
+  "quickActions": [
+    {
+      "id": "parse-new",
+      "title": "Parse New Data",
+      "description": "Upload and categorize conversation files",
+      "icon": "Upload",
+      "href": "/parse",
+      "isPrimary": true
+    },
+    {
+      "id": "prompt-refiner",
+      "title": "Prompt Refiner",
+      "description": "Test and refine your categorization prompts",
+      "icon": "Wand2",
+      "href": "/prompt-refiner",
+      "isPrimary": false
+    },
+    {
+      "id": "browse-projects",
+      "title": "Browse All Projects",
+      "description": "View and manage all your parsing projects",
+      "icon": "FolderOpen",
+      "href": "#",
+      "isPrimary": false
+    }
+  ]
+}

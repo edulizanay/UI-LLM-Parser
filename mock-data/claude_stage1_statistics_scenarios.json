@@ -1,0 +1,44 @@
+{
+  "statistics_by_selection": {
+    "all_fields_selected_collapsed": {
+      "selected_fields": ["id", "title", "date", "messages", "source", "message_count"],
+      "messages_state": "collapsed",
+      "conversation_count": 3,
+      "processing_level": "3 conversations",
+      "estimated_tokens": 15420,
+      "estimated_processing_time_minutes": 2
+    },
+    "all_fields_selected_expanded": {
+      "selected_fields": ["id", "title", "date", "messages", "source", "message_count"],
+      "messages_state": "expanded",
+      "conversation_count": 3,
+      "processing_level": "26 interactions",
+      "estimated_tokens": 23150,
+      "estimated_processing_time_minutes": 8
+    },
+    "only_messages_collapsed": {
+      "selected_fields": ["messages"],
+      "messages_state": "collapsed",
+      "conversation_count": 3,
+      "processing_level": "3 conversations",
+      "estimated_tokens": 14200,
+      "estimated_processing_time_minutes": 2
+    },
+    "only_messages_expanded": {
+      "selected_fields": ["messages"],
+      "messages_state": "expanded", 
+      "conversation_count": 3,
+      "processing_level": "26 interactions",
+      "estimated_tokens": 21800,
+      "estimated_processing_time_minutes": 7
+    },
+    "metadata_only": {
+      "selected_fields": ["id", "title", "date", "source"],
+      "messages_state": "not_selected",
+      "conversation_count": 3,
+      "processing_level": "metadata only",
+      "estimated_tokens": 240,
+      "estimated_processing_time_minutes": 0.5
+    }
+  }
+}

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Prompt Tester</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 1fr;
+            gap: 16px;
+            height: 100vh;
+            padding: 16px;
+        }
+
+        .controls-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 13px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label i {
+            width: 14px;
+            height: 14px;
+        }
+
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        button:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .template-panel, .results-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 500;
+            font-size: 14px;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-header i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prompt-editor {
+            width: 100%;
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: none;
+            background: #fafafa;
+        }
+
+        .prompt-editor:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        .variables-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .variables-preview strong {
+            color: #475569;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .variable-item {
+            margin-bottom: 4px;
+            color: #64748b;
+        }
+
+        .variable-name {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .results-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .result-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .result-status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .result-status.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .result-status i {
+            width: 12px;
+            height: 12px;
+        }
+
+        .result-timing {
+            color: #64748b;
+        }
+
+        .result-content {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 3px solid #3b82f6;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: #64748b;
+        }
+
+        .loading.show {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .loading i {
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .empty-state i {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        select:disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <div class="form-group">
+                <label for="stage">
+                    <i data-lucide="layers"></i>
+                    Processing Stage
+                </label>
+                <select id="stage">
+                    <option value="">Select stage...</option>
+                    <option value="tagger">Tagger - Categorize conversations</option>
+                    <option value="parser">Parser - Extract structured data</option>
+                    <option value="reconciler">Reconciler - Validate with knowledge base</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="provider">
+                    <i data-lucide="cpu"></i>
+                    LLM Provider
+                </label>
+                <select id="provider">
+                    <option value="">Select provider...</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="groq">Groq</option>
+                    <option value="cerebras">Cerebras</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="model">
+                    <i data-lucide="brain"></i>
+                    Model
+                </label>
+                <select id="model" disabled>
+                    <option value="">Select model...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sample">
+                    <i data-lucide="database"></i>
+                    Sample Data
+                </label>
+                <select id="sample" disabled>
+                    <option value="">Select sample...</option>
+                </select>
+            </div>
+
+            <button id="testBtn" disabled>
+                <i data-lucide="play"></i>
+                Test Prompt
+            </button>
+        </div>
+
+        <!-- Template Panel -->
+        <div class="template-panel">
+            <div class="panel-header">
+                <i data-lucide="edit-3"></i>
+                Prompt Template
+            </div>
+            <div class="panel-content">
+                <textarea
+                    id="promptEditor"
+                    class="prompt-editor"
+                    placeholder="Select a stage to load the default prompt template..."
+                ></textarea>
+                <div id="variablesPreview" class="variables-preview" style="display: none;">
+                    <strong>Variables will be substituted:</strong>
+                    <div id="variablesContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="results-panel">
+            <div class="panel-header">
+                <i data-lucide="bar-chart-3"></i>
+                Test Results
+            </div>
+            <div class="panel-content">
+                <div id="loadingIndicator" class="loading">
+                    <i data-lucide="loader-2"></i>
+                    <div>Testing prompt with LLM...</div>
+                </div>
+                <div id="resultsContainer" class="results-content">
+                    <div class="empty-state">
+                        <i data-lucide="play-circle"></i>
+                        <div>Configure settings and click "Test Prompt" to see results</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const stageSelect = document.getElementById('stage');
+        const providerSelect = document.getElementById('provider');
+        const modelSelect = document.getElementById('model');
+        const sampleSelect = document.getElementById('sample');
+        const testBtn = document.getElementById('testBtn');
+        const promptEditor = document.getElementById('promptEditor');
+        const variablesPreview = document.getElementById('variablesPreview');
+        const variablesContent = document.getElementById('variablesContent');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        let currentSample = null;
+        let providers = {};
+        let samples = {};
+
+        // API functions
+        async function fetchAPI(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return null;
+            }
+        }
+
+        // Event listeners
+        stageSelect.addEventListener('change', onStageChange);
+        providerSelect.addEventListener('change', onProviderChange);
+        modelSelect.addEventListener('change', updateTestButtonState);
+        sampleSelect.addEventListener('change', onSampleChange);
+        promptEditor.addEventListener('input', onPromptChange);
+        testBtn.addEventListener('click', onTestPrompt);
+
+        async function onStageChange() {
+            const stage = stageSelect.value;
+
+            // Load prompt template
+            if (stage) {
+                try {
+                    const template = await fetchAPI(`/api/prompts/${stage}`);
+                    if (template) {
+                        promptEditor.value = template.content;
+                        onPromptChange();
+                    }
+                } catch (error) {
+                    console.error('Failed to load prompt:', error);
+                }
+
+                // Load samples
+                await loadSamples(stage);
+            } else {
+                promptEditor.value = '';
+                variablesPreview.style.display = 'none';
+                sampleSelect.innerHTML = '<option value="">Select sample...</option>';
+                sampleSelect.disabled = true;
+            }
+
+            updateTestButtonState();
+        }
+
+        async function onProviderChange() {
+            const provider = providerSelect.value;
+            modelSelect.innerHTML = '<option value="">Select model...</option>';
+
+            if (provider && providers[provider]) {
+                modelSelect.disabled = false;
+                providers[provider].models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+            } else {
+                modelSelect.disabled = true;
+            }
+
+            updateTestButtonState();
+        }
+
+        function onSampleChange() {
+            const sampleId = sampleSelect.value;
+            const stage = stageSelect.value;
+
+            if (sampleId && stage && samples[stage]) {
+                currentSample = samples[stage].find(s => s.id === sampleId);
+                onPromptChange(); // Update variables preview
+            } else {
+                currentSample = null;
+            }
+
+            updateTestButtonState();
+        }
+
+        function onPromptChange() {
+            const prompt = promptEditor.value;
+            const variables = extractVariables(prompt);
+
+            if (variables.length > 0 && currentSample) {
+                variablesPreview.style.display = 'block';
+                variablesContent.innerHTML = variables.map(variable => {
+                    const value = getVariablePreview(variable, currentSample);
+                    return `<div class="variable-item"><span class="variable-name">{${variable}}:</span> ${value}</div>`;
+                }).join('');
+            } else {
+                variablesPreview.style.display = 'none';
+            }
+        }
+
+        async function loadSamples(stage) {
+            sampleSelect.innerHTML = '<option value="">Select sample...</option>';
+            currentSample = null;
+
+            if (!stage) {
+                sampleSelect.disabled = true;
+                return;
+            }
+
+            try {
+                const stageSamples = await fetchAPI(`/api/samples/${stage}`);
+                samples[stage] = stageSamples || [];
+
+                if (samples[stage].length === 0) {
+                    // Add a simple default sample for testing
+                    const defaultSample = {
+                        id: 'manual-input',
+                        filename: 'manual-input.json',
+                        metadata: { title: 'Manual Input', messageCount: 2, complexity: 'simple' },
+                        data: {
+                            messages: [
+                                { role: 'user', content: 'I need help planning my startup strategy for next quarter' },
+                                { role: 'assistant', content: 'I can help you develop a comprehensive business plan. What specific areas would you like to focus on?' }
+                            ]
+                        }
+                    };
+                    samples[stage] = [defaultSample];
+                }
+
+                sampleSelect.disabled = false;
+                samples[stage].forEach(sample => {
+                    const option = document.createElement('option');
+                    option.value = sample.id;
+                    option.textContent = `${sample.metadata.title} (${sample.metadata.messageCount} msgs)`;
+                    sampleSelect.appendChild(option);
+                });
+
+                // Auto-select first sample
+                if (samples[stage].length > 0) {
+                    sampleSelect.value = samples[stage][0].id;
+                    onSampleChange();
+                }
+            } catch (error) {
+                console.error('Failed to load samples:', error);
+                sampleSelect.disabled = true;
+            }
+        }
+
+        function extractVariables(prompt) {
+            const matches = prompt.match(/\{([^}]+)\}/g);
+            return matches ? matches.map(match => match.slice(1, -1)) : [];
+        }
+
+        function getVariablePreview(variable, sample) {
+            switch (variable) {
+                case 'conversation_text':
+                    if (sample.data.messages) {
+                        return sample.data.messages.map(msg => `${msg.role}: ${msg.content.substring(0, 40)}...`).join('\\n');
+                    }
+                    return sample.data.title || 'Sample conversation text';
+                case 'category':
+                    return sample.data.tags ? sample.data.tags.join(', ') : 'general';
+                case 'parsed_data':
+                    return JSON.stringify(sample.data, null, 2).substring(0, 80) + '...';
+                case 'knowledge_base':
+                    return 'Knowledge base context would be provided here';
+                default:
+                    return `[${variable} value]`;
+            }
+        }
+
+        function updateTestButtonState() {
+            const canTest = stageSelect.value && providerSelect.value && modelSelect.value && currentSample && promptEditor.value.trim();
+            testBtn.disabled = !canTest;
+        }
+
+        async function onTestPrompt() {
+            if (testBtn.disabled) return;
+
+            loadingIndicator.classList.add('show');
+            testBtn.disabled = true;
+
+            try {
+                const response = await fetchAPI('/api/test-prompt', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        stage: stageSelect.value,
+                        provider: providerSelect.value,
+                        model: modelSelect.value,
+                        prompt: promptEditor.value,
+                        sampleData: currentSample.data
+                    })
+                });
+
+                displayResult(response);
+            } catch (error) {
+                displayResult({
+                    success: false,
+                    error: error.message || 'Failed to test prompt',
+                    timing: 0
+                });
+            }
+
+            loadingIndicator.classList.remove('show');
+            updateTestButtonState();
+        }
+
+        function displayResult(response) {
+            const timestamp = new Date().toLocaleTimeString();
+            const resultItem = document.createElement('div');
+            resultItem.className = 'result-item';
+
+            const statusIcon = response.success ? 'check-circle' : 'x-circle';
+
+            resultItem.innerHTML = `
+                <div class="result-meta">
+                    <div>
+                        <span class="result-status ${response.success ? 'success' : 'error'}">
+                            <i data-lucide="${statusIcon}"></i>
+                            ${response.success ? 'Success' : 'Error'}
+                        </span>
+                        <span style="margin-left: 10px; font-size: 11px; color: #64748b;">
+                            ${timestamp} • ${stageSelect.value} • ${providerSelect.value}/${modelSelect.value}
+                        </span>
+                    </div>
+                    <div class="result-timing">${response.timing}ms</div>
+                </div>
+                <div class="result-content">${response.success ? response.response : response.error}</div>
+            `;
+
+            // Clear empty state and add new result at top
+            if (resultsContainer.querySelector('.empty-state')) {
+                resultsContainer.innerHTML = '';
+            }
+
+            resultsContainer.insertBefore(resultItem, resultsContainer.firstChild);
+
+            // Re-render Lucide icons
+            lucide.createIcons();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+
+            // Load providers
+            try {
+                providers = await fetchAPI('/api/providers') || {};
+            } catch (error) {
+                console.error('Failed to load providers:', error);
+            }
+
+            updateTestButtonState();
+        });
+    </script>
+</body>
+</html>

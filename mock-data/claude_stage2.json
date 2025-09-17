@@ -1,0 +1,96 @@
+{
+  "source_file": "claude_conversations.json", 
+  "analysis_timestamp": "2024-11-05T14:30:00.000Z",
+  "selected_fields": ["id", "title", "date", "messages"],
+  "categorization_suggestions": {
+    "computer_friendly_categories": [
+      {
+        "field_name": "date",
+        "distinct_count": 3,
+        "categories": [
+          {
+            "value": "2024-11-04",
+            "conversation_count": 1,
+            "sample_titles": ["Inquiring About Pricing Difference and Discount"]
+          },
+          {
+            "value": "2024-09-24", 
+            "conversation_count": 1,
+            "sample_titles": ["Learning Python Data Structures"]
+          },
+          {
+            "value": "2024-10-15",
+            "conversation_count": 1,
+            "sample_titles": ["Design System Color Theory"]
+          }
+        ]
+      },
+      {
+        "field_name": "source",
+        "distinct_count": 1,
+        "categories": [
+          {
+            "value": "claude",
+            "conversation_count": 3,
+            "sample_titles": ["Inquiring About Pricing Difference and Discount", "Learning Python Data Structures", "Design System Color Theory"]
+          }
+        ]
+      }
+    ],
+    "llm_category_proposals": [
+      {
+        "category_name": "business",
+        "editable_prompt": "choose this option if the conversation involves work, negotiations, professional matters, or business decisions",
+        "preview_examples": [
+          {
+            "conversation_id": "4d8ad794-2efe-4612-ad7b-33d8f1abfab6",
+            "conversation_title": "Inquiring About Pricing Difference and Discount", 
+            "sample_content": "Answer Spencer that I see it's more expensive than the website, if he could clarify the difference with the website. Ask him if he's willing to make us a discount...",
+            "predicted_tags": ["business", "negotiation"]
+          }
+        ]
+      },
+      {
+        "category_name": "personal_growth",
+        "editable_prompt": "choose this option if I'm learning something new, developing skills, or seeking knowledge for personal development",
+        "preview_examples": [
+          {
+            "conversation_id": "ca7e1835-b085-4048-b4d5-f9fe2a99c78e",
+            "conversation_title": "Learning Python Data Structures",
+            "sample_content": "Hey Claude, I want to learn more about Python dictionaries and how to use them effectively in my code.",
+            "predicted_tags": ["personal_growth", "coding", "programming"]
+          }
+        ]
+      },
+      {
+        "category_name": "design",
+        "editable_prompt": "choose this option if the conversation is about design, user experience, visual aesthetics, or creative work",
+        "preview_examples": [
+          {
+            "conversation_id": "3f2a1b4c-5d6e-7f8g-9h0i-1j2k3l4m5n6o",
+            "conversation_title": "Design System Color Theory",
+            "sample_content": "I'm building a design system and struggling with color accessibility. Can you help me understand WCAG contrast requirements?",
+            "predicted_tags": ["design", "accessibility", "color_theory"]
+          }
+        ]
+      },
+      {
+        "category_name": "coding",
+        "editable_prompt": "choose this option if the conversation involves programming, software development, technical implementation, or code-related discussions",
+        "preview_examples": [
+          {
+            "conversation_id": "ca7e1835-b085-4048-b4d5-f9fe2a99c78e", 
+            "conversation_title": "Learning Python Data Structures",
+            "sample_content": "Python dictionaries are incredibly powerful data structures! They're key-value pairs that allow you to store and retrieve data efficiently...",
+            "predicted_tags": ["coding", "python", "data_structures"]
+          }
+        ]
+      }
+    ],
+    "custom_category_placeholder": {
+      "category_name": "",
+      "editable_prompt": "describe when this category should be applied to conversations",
+      "preview_examples": []
+    }
+  }
+}
