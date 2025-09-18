@@ -292,7 +292,7 @@ describe('useLocalStorage Hook', () => {
         { id: 2, name: 'Item 2' },
       ]
 
-      const { result } = renderHook(() => useLocalStorage('array-key', []))
+      const { result } = renderHook(() => useLocalStorage('array-key', [] as Array<{id: number, name: string}>))
 
       act(() => {
         result.current.setValue(arrayData)

@@ -227,7 +227,7 @@ describe('PromptEditor Component', () => {
 
     it('should show appropriate placeholder for custom categories', () => {
       const customCategory = {
-        type: 'custom',
+        type: 'custom' as const,
         id: 'new_custom',
         name: 'new_custom',
         editable_prompt: ''

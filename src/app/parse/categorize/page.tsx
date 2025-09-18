@@ -276,5 +276,3 @@ export default function Stage2Page() {
   )
 }
 
-// Export named component for testing
-export { Stage2Page }

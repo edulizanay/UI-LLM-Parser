@@ -41,5 +41,3 @@ export default function DashboardPage() {
   )
 }
 
-// Export named component for testing
-export { DashboardPage }

@@ -38,7 +38,7 @@ const mockFileReader = {
   readAsText: jest.fn().mockImplementation(() => {
     setTimeout(() => {
       if (mockFileReader.onload) {
-        mockFileReader.onload({
+        mockFileReader.onload.call({} as FileReader, {
           target: { result: JSON.stringify([{
             id: 'test-1',
             title: 'Test Conversation',
@@ -123,7 +123,7 @@ describe('End-to-End Workflow Integration', () => {
       // Verify data was set
       const savedData = mockLocalStorage.getItem('parsing-stage-1-state')
       expect(savedData).toBeTruthy()
-      expect(JSON.parse(savedData)).toEqual(mockStage1Data)
+      expect(JSON.parse(savedData!)).toEqual(mockStage1Data)
     })
 
     it('should handle navigation back and forth between stages', async () => {
@@ -156,7 +156,7 @@ describe('End-to-End Workflow Integration', () => {
       // Verify data persistence - context should be preserved
       const savedState = mockLocalStorage.getItem('parsing-stage-1-state')
       expect(savedState).toBeTruthy()
-      const parsedState = JSON.parse(savedState)
+      const parsedState = JSON.parse(savedState!)
       expect(parsedState.contextDescription).toBe('Test conversation data')
     })
   })

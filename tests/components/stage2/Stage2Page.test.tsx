@@ -3,7 +3,7 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
-import { Stage2Page } from '@/app/parse/categorize/page'
+import Stage2Page from '@/app/parse/categorize/page'
 
 // Mock the router
 jest.mock('next/navigation', () => ({

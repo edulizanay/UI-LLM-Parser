@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from 'next/navigation'
-import { DashboardPage } from '@/app/page'
+import DashboardPage from '@/app/page'
 import { HeroSection } from '@/components/dashboard/HeroSection'
 import { ProjectGrid } from '@/components/dashboard/ProjectGrid'
 import { ProcessingStatus } from '@/components/dashboard/ProcessingStatus'
