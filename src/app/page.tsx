@@ -10,8 +10,8 @@ import { PromptRefinerSection } from '@/components/dashboard/PromptRefinerSectio
 import { DragDropOverlay } from '@/components/dashboard/DragDropOverlay'
 import { getMockProjects, getMockProcessingStatus } from '@/lib/dashboardData'
 
-// Export named component for testing
-export function DashboardPage() {
+// Main dashboard page component
+export default function DashboardPage() {
   // Load mock data
   const projects = getMockProjects()
   const processingStatus = getMockProcessingStatus()
@@ -41,4 +41,5 @@ export function DashboardPage() {
   )
 }
 
-export default DashboardPage
+// Export named component for testing
+export { DashboardPage }

@@ -34,8 +34,8 @@ interface Stage1Data {
   }
 }
 
-// Export named component for testing
-export function Stage2Page() {
+// Main categorization page component
+export default function Stage2Page() {
   const router = useRouter()
   const [stage1Data, setStage1Data] = useState<Stage1Data | null>(null)
   const { state, setters, updateState } = useStage2State()
@@ -276,4 +276,5 @@ export function Stage2Page() {
   )
 }
 
-export default Stage2Page
+// Export named component for testing
+export { Stage2Page }

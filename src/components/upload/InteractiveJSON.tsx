@@ -179,7 +179,7 @@ export function InteractiveJSON({
             onClick={onMessagesToggle}
           >
             {isMessagesCollapsed
-              ? 'Entire conversations will be tagged'
+              ? 'Entire conversations will be tagged as one'
               : 'Each message will receive a tag - click here to tag entire conversations instead'
             }
           </p>
