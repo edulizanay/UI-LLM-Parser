@@ -188,16 +188,16 @@ describe('End-to-End Workflow Integration', () => {
       render(<Stage2Page />)
 
       // Check that Stage 2 header is present
-      expect(screen.getByText('Stage 2: Data Categorization')).toBeInTheDocument()
+      expect(screen.getByText('Configure Categories')).toBeInTheDocument()
 
-      // Verify computer-friendly categories are suggested (based on Stage 1 data)
-      await waitFor(() => {
-        // Should show computer-friendly suggestions based on selected fields
-        expect(screen.getByText('Computer-friendly Categories')).toBeInTheDocument()
-      })
+      // Verify that Stage 1 data was transferred - check that categories are available
+      expect(screen.getByText('business')).toBeInTheDocument()
+      expect(screen.getByText('personal_growth')).toBeInTheDocument()
+      expect(screen.getByText('design')).toBeInTheDocument()
+      expect(screen.getByText('coding')).toBeInTheDocument()
 
-      // Verify LLM categories section is available
-      expect(screen.getByText('LLM Categories')).toBeInTheDocument()
+      // Verify that the component loaded successfully with the Stage 1 data
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
     })
 
     it('should maintain category selections and prompts in Stage 2', async () => {
@@ -300,6 +300,16 @@ describe('End-to-End Workflow Integration', () => {
         expect(screen.getByText('Configure Categories')).toBeInTheDocument()
       })
 
+      // First select a category to enable the continue button
+      const businessCategory = screen.getByText('business')
+      fireEvent.click(businessCategory)
+
+      // Wait for button to become enabled
+      await waitFor(() => {
+        const finishButton = screen.getByText('Continue to Processing')
+        expect(finishButton.closest('button')).not.toBeDisabled()
+      })
+
       // Look for completion/finish button (check actual button text from component)
       const finishButton = screen.getByText('Continue to Processing')
       expect(finishButton).toBeInTheDocument()
@@ -308,8 +318,8 @@ describe('End-to-End Workflow Integration', () => {
       // Click completion button
       fireEvent.click(finishButton)
 
-      // Should navigate back to dashboard (via router push)
-      expect(mockRouterPush).toHaveBeenCalledWith('/')
+      // Should navigate back to dashboard with completion status (via router push)
+      expect(mockRouterPush).toHaveBeenCalledWith('/?completed=categorization-success')
     })
   })
 
