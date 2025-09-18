@@ -29,11 +29,11 @@ const mockFileData = {
     }
   ],
   detectedStructure: [
-    { name: 'id', type: 'computer_friendly', category: 'identifier' },
-    { name: 'participant_a', type: 'computer_friendly', category: 'metadata' },
-    { name: 'participant_b', type: 'computer_friendly', category: 'metadata' },
-    { name: 'timestamp', type: 'computer_friendly', category: 'metadata' },
-    { name: 'messages', type: 'llm_friendly', category: 'content', collapsible: true }
+    { name: 'id', type: 'computer_friendly' as const, category: 'identifier' },
+    { name: 'participant_a', type: 'computer_friendly' as const, category: 'metadata' },
+    { name: 'participant_b', type: 'computer_friendly' as const, category: 'metadata' },
+    { name: 'timestamp', type: 'computer_friendly' as const, category: 'metadata' },
+    { name: 'messages', type: 'llm_friendly' as const, category: 'content', collapsible: true }
   ]
 }
 

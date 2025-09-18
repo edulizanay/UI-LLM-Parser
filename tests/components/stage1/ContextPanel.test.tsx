@@ -16,8 +16,8 @@ const mockFileData = {
     }
   ],
   detectedStructure: [
-    { name: 'id', type: 'computer_friendly' },
-    { name: 'messages', type: 'llm_friendly' }
+    { name: 'id', type: 'computer_friendly' as const, category: 'identifier' },
+    { name: 'messages', type: 'llm_friendly' as const, category: 'content', collapsible: true }
   ]
 }
 

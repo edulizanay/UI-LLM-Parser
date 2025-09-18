@@ -53,7 +53,25 @@ export interface ContextPlaceholders {
 // Mock data accessors
 export const getContextPlaceholders = (): ContextPlaceholders => contextPlaceholders
 
-export const getStage1Analysis = (): Stage1Analysis => claudeStage1
+export const getStage1Analysis = (): Stage1Analysis => {
+  // Type-cast the mock data to ensure correct types
+  const rawData = claudeStage1 as any
+
+  // Transform field_analysis to ensure type property is correctly typed
+  const transformedFieldAnalysis: Record<string, FieldAnalysis> = {}
+
+  Object.entries(rawData.field_analysis).forEach(([fieldName, fieldData]: [string, any]) => {
+    transformedFieldAnalysis[fieldName] = {
+      ...fieldData,
+      type: fieldData.type as FieldAnalysisType // Type assertion for the string -> FieldAnalysisType
+    }
+  })
+
+  return {
+    ...rawData,
+    field_analysis: transformedFieldAnalysis
+  }
+}
 
 export const getStage2Data = () => claudeStage2
 

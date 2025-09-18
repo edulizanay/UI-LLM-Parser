@@ -30,7 +30,8 @@ const defaultProps = {
   selectedCategories: mockSelectedCategories,
   activeCategoryId: 'business',
   onCategorySelect: jest.fn(),
-  onPromptEdit: jest.fn()
+  onPromptEdit: jest.fn(),
+  onCategoryRemove: jest.fn()
 }
 
 describe('PromptEditor Component', () => {

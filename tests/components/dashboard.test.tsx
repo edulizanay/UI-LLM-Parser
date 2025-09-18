@@ -95,16 +95,24 @@ describe('Project Grid', () => {
       id: '1',
       name: 'Family Conversations 2023',
       status: 'completed' as const,
+      createdAt: new Date('2024-01-01'),
+      lastModified: new Date('2024-01-03'),
       fileCount: 3,
       categoriesCreated: 5,
+      conversationsProcessed: 150,
+      outputFiles: ['family_2023.md', 'categories.json'],
       processedDate: '3 days ago'
     },
     {
       id: '2',
       name: 'Work Projects',
       status: 'processing' as const,
+      createdAt: new Date('2024-01-10'),
+      lastModified: new Date(),
       fileCount: 1,
       categoriesCreated: 2,
+      conversationsProcessed: 75,
+      outputFiles: ['work_partial.md'],
       processedDate: 'In progress'
     }
   ]
