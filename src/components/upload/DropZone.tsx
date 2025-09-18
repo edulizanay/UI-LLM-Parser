@@ -159,7 +159,7 @@ export function DropZone({ onFileUpload, error, maxFileSize = 10 }: DropZoneProp
 
       {/* Error Display */}
       {displayError && (
-        <div className="flex items-center gap-ds-small p-ds-small rounded-ds-sm bg-red-50 border border-red-200">
+        <div data-testid="upload-error" className="flex items-center gap-ds-small p-ds-small rounded-ds-sm bg-red-50 border border-red-200">
           <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
           <p className="text-ds-small text-red-700">{displayError}</p>
         </div>

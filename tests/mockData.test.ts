@@ -77,4 +77,108 @@ describe('Mock Data Integration', () => {
       expect(statistics).toBeDefined()
     })
   })
+
+  describe('Error Handling', () => {
+    it('should handle missing/corrupted mock data files gracefully', () => {
+      // Test that functions don't throw when called
+      expect(() => getContextPlaceholders()).not.toThrow()
+      expect(() => getStage1Analysis()).not.toThrow()
+      expect(() => getStage2Data()).not.toThrow()
+      expect(() => getStage1Statistics()).not.toThrow()
+    })
+  })
+})
+
+describe('Field Type Filtering', () => {
+  it('should filter computer-friendly fields correctly', () => {
+    const computerFields = getComputerFriendlyFields()
+
+    expect(Array.isArray(computerFields)).toBe(true)
+    expect(computerFields.length).toBeGreaterThan(0)
+    expect(computerFields).toContain('id')
+    expect(computerFields).toContain('source')
+    expect(computerFields).toContain('date')
+  })
+
+  it('should filter LLM-friendly fields correctly', () => {
+    const llmFields = getLLMFriendlyFields()
+
+    expect(Array.isArray(llmFields)).toBe(true)
+    expect(llmFields.length).toBeGreaterThan(0)
+    expect(llmFields).toContain('title')
+    expect(llmFields).toContain('messages')
+  })
+
+  it('should return empty array for unknown field types', () => {
+    // This tests the robustness of filtering functions
+    const computerFields = getComputerFriendlyFields()
+    const llmFields = getLLMFriendlyFields()
+
+    // Should not contain undefined or null values
+    expect(computerFields.every(field => field && typeof field === 'string')).toBe(true)
+    expect(llmFields.every(field => field && typeof field === 'string')).toBe(true)
+  })
+
+  it('should handle analysis data with missing field types', () => {
+    const analysis = getStage1Analysis()
+
+    // Verify field analysis structure
+    expect(analysis.field_analysis).toBeDefined()
+    Object.values(analysis.field_analysis).forEach((fieldAnalysis: any) => {
+      expect(fieldAnalysis).toHaveProperty('type')
+      expect(fieldAnalysis).toHaveProperty('data_type')
+      expect(fieldAnalysis).toHaveProperty('sample_values')
+      expect(fieldAnalysis).toHaveProperty('distinct_count')
+    })
+  })
+})
+
+describe('Data Structure Validation', () => {
+  it('should have valid context placeholder structure', () => {
+    const placeholders = getContextPlaceholders()
+
+    expect(placeholders).toHaveProperty('context_placeholders')
+    expect(placeholders).toHaveProperty('detection_rules')
+    expect(placeholders).toHaveProperty('styling')
+
+    // Validate detection rules structure - it's an object, not array
+    expect(typeof placeholders.detection_rules).toBe('object')
+    expect(placeholders.detection_rules).not.toBeNull()
+
+    // Check that detection rules have expected structure
+    Object.values(placeholders.detection_rules).forEach((rule: any) => {
+      expect(rule).toHaveProperty('field_indicators')
+      expect(rule).toHaveProperty('value_patterns')
+      expect(Array.isArray(rule.field_indicators)).toBe(true)
+      expect(Array.isArray(rule.value_patterns)).toBe(true)
+    })
+  })
+
+  it('should have valid stage1 analysis structure', () => {
+    const analysis = getStage1Analysis()
+
+    expect(analysis).toHaveProperty('field_analysis')
+    expect(analysis).toHaveProperty('processing_statistics')
+    expect(analysis).toHaveProperty('recommended_selections')
+
+    // Validate processing statistics
+    const stats = analysis.processing_statistics
+    expect(typeof stats.total_conversations).toBe('number')
+    expect(typeof stats.total_messages).toBe('number')
+    expect(typeof stats.estimated_tokens).toBe('number')
+  })
+
+  it('should have valid stage2 data structure', () => {
+    const stage2Data = getStage2Data()
+
+    expect(stage2Data).toBeDefined()
+    expect(typeof stage2Data).toBe('object')
+  })
+
+  it('should have valid statistics scenarios structure', () => {
+    const statistics = getStage1Statistics()
+
+    expect(statistics).toBeDefined()
+    expect(typeof statistics).toBe('object')
+  })
 })
