@@ -266,7 +266,7 @@ describe('ContextPanel Component', () => {
         name: null,
         content: undefined,
         detectedStructure: null
-      }
+      } as any // Type assertion for intentionally invalid test data
 
       render(
         <ContextPanel

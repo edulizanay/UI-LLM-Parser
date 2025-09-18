@@ -1,7 +1,6 @@
 // ABOUTME: Tests for field selection hook functionality
 // ABOUTME: Tests field selection state, statistics calculation, validation, and localStorage persistence
 
-import React from 'react'
 import { renderHook, act } from '@testing-library/react'
 
 interface ProcessingStats {

@@ -231,10 +231,11 @@ describe('Drag and Drop Overlay', () => {
     render(<DashboardPage />)
 
     const file = new File(['test content'], 'test.json', { type: 'application/json' })
+    const dataTransfer = new DataTransfer()
+    dataTransfer.items.add(file)
     const dropEvent = new DragEvent('drop', {
-      dataTransfer: new DataTransfer()
+      dataTransfer
     })
-    dropEvent.dataTransfer!.files = [file] as any
 
     document.dispatchEvent(dropEvent)
 

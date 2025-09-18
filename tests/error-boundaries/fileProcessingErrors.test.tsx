@@ -72,9 +72,9 @@ const FileProcessingErrorHandler = {
 
 // Mock file upload component with error handling
 const FileUploadWithErrorHandling = () => {
-  const [error, setError] = React.useState<string | null>(null)
+  const [error, setError] = React.useState(null)
   const [isProcessing, setIsProcessing] = React.useState(false)
-  const [data, setData] = React.useState<any>(null)
+  const [data, setData] = React.useState(null)
 
   const handleFileUpload = async (file: File) => {
     setError(null)

@@ -7,19 +7,19 @@ import { PromptEditor } from '@/components/categorization/PromptEditor'
 
 const mockSelectedCategories = [
   {
-    type: 'computer_friendly',
+    type: 'computer_friendly' as const,
     id: 'date',
     name: 'Date-based',
     field_name: 'date'
   },
   {
-    type: 'llm_friendly',
+    type: 'llm_friendly' as const,
     id: 'business',
     name: 'business',
     editable_prompt: 'choose this option if the conversation involves work, negotiations, professional matters, or business decisions'
   },
   {
-    type: 'custom',
+    type: 'custom' as const,
     id: 'my_category',
     name: 'my_category',
     editable_prompt: 'describe when conversations should receive this tag'

@@ -258,7 +258,7 @@ describe('FieldSelector Component', () => {
       const invalidFileData = {
         ...mockFileData,
         detectedStructure: [{ name: null, type: 'unknown' }]
-      }
+      } as any // Type assertion for intentionally invalid test data
 
       render(
         <FieldSelector
