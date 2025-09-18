@@ -21,24 +21,24 @@ interface ConversationData {
 
 // Mock field selection hook - this should be implemented in src/hooks/useFieldSelection.ts
 const useFieldSelection = (conversationData: ConversationData | null) => {
-  const [selectedFields, setSelectedFields] = React.useState<string[]>([])
+  const [selectedFields, setSelectedFields] = React.useState([])
   const [isMessagesCollapsed, setIsMessagesCollapsed] = React.useState(false)
-  const [processingStats, setProcessingStats] = React.useState<ProcessingStats>({
+  const [processingStats, setProcessingStats] = React.useState({
     conversationCount: 0,
     interactionCount: 0,
     tokenCount: 0
   })
 
   const toggleField = (fieldName: string) => {
-    setSelectedFields(prev =>
+    setSelectedFields((prev: string[]) =>
       prev.includes(fieldName)
-        ? prev.filter(f => f !== fieldName)
+        ? prev.filter((f: string) => f !== fieldName)
         : [...prev, fieldName]
     )
   }
 
   const toggleMessagesCollapse = () => {
-    setIsMessagesCollapsed(prev => !prev)
+    setIsMessagesCollapsed((prev: boolean) => !prev)
   }
 
   const calculateStatistics = () => {
@@ -63,7 +63,7 @@ const useFieldSelection = (conversationData: ConversationData | null) => {
       })
     }
 
-    selectedFields.forEach(fieldName => {
+    selectedFields.forEach((fieldName: string) => {
       if (fieldName !== 'messages') {
         const value = conversationData[fieldName]
         if (typeof value === 'string') {

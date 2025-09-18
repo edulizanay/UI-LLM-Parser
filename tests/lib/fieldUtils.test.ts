@@ -120,28 +120,34 @@ describe('getFieldClasses', () => {
 
 describe('analyzeFieldType', () => {
   it('should categorize ID fields as computer_friendly', () => {
-    const analysis: FieldAnalysis = { type: 'computer_friendly', description: 'Unique identifier' }
+    const analysis: FieldAnalysis = {
+      type: 'computer_friendly',
+      distinct_count: 100,
+      sample_values: ['user_123', 'user_456'],
+      data_type: 'string',
+      aggregation_note: 'Unique identifier'
+    }
     const result = analyzeFieldType('user_id', analysis)
 
     expect(result).toBe('computer_friendly')
   })
 
   it('should categorize content fields as llm_friendly', () => {
-    const analysis: FieldAnalysis = { type: 'llm_friendly', description: 'Text content' }
+    const analysis: FieldAnalysis = { type: 'llm_friendly', distinct_count: 50, sample_values: ['Hello world'], data_type: 'string', aggregation_note: 'Text content' }
     const result = analyzeFieldType('message_content', analysis)
 
     expect(result).toBe('llm_friendly')
   })
 
   it('should use field analysis when available', () => {
-    const analysis: FieldAnalysis = { type: 'llm_friendly', description: 'Test field' }
+    const analysis: FieldAnalysis = { type: 'llm_friendly', distinct_count: 10, sample_values: ['test'], data_type: 'string' }
     const result = analyzeFieldType('some_field', analysis)
 
     expect(result).toBe('llm_friendly')
   })
 
   it('should fallback to pattern matching for unknown fields', () => {
-    const analysis: FieldAnalysis = { type: 'unknown' as any, description: 'Unknown field' }
+    const analysis: FieldAnalysis = { type: 'unknown' as any, distinct_count: 1, sample_values: ['unknown'], data_type: 'string' }
 
     // Test computer-friendly patterns
     expect(analyzeFieldType('timestamp', analysis)).toBe('computer_friendly')
@@ -155,14 +161,14 @@ describe('analyzeFieldType', () => {
   })
 
   it('should default to computer_friendly for unrecognized patterns', () => {
-    const analysis: FieldAnalysis = { type: 'unknown' as any, description: 'Unknown field' }
+    const analysis: FieldAnalysis = { type: 'unknown' as any, distinct_count: 1, sample_values: ['unknown'], data_type: 'string' }
     const result = analyzeFieldType('random_field_name', analysis)
 
     expect(result).toBe('computer_friendly')
   })
 
   it('should handle case insensitive field names', () => {
-    const analysis: FieldAnalysis = { type: 'unknown' as any, description: 'Unknown field' }
+    const analysis: FieldAnalysis = { type: 'unknown' as any, distinct_count: 1, sample_values: ['unknown'], data_type: 'string' }
 
     expect(analyzeFieldType('USER_ID', analysis)).toBe('computer_friendly')
     expect(analyzeFieldType('MESSAGE_CONTENT', analysis)).toBe('llm_friendly')
