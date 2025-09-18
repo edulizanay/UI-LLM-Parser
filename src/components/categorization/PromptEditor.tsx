@@ -130,7 +130,7 @@ export function PromptEditor({
                 <button
                   onClick={() => onCategorySelect(category.id)}
                   aria-label={`${category.name} category`}
-                  className={`w-full px-3 py-2 text-left rounded-md transition-all duration-200 ${
+                  className={`w-full px-3 py-2 text-right rounded-md transition-all duration-200 ${
                     activeCategoryId === category.id
                       ? 'bg-blue-50 text-blue-900 font-semibold'
                       : 'text-gray-900 font-semibold hover:bg-gray-50'

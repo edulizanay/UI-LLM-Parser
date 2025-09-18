@@ -211,12 +211,11 @@ export function Stage2Page() {
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 mb-4"
           >
             <ArrowLeft data-testid="arrow-left-icon" className="w-5 h-5" />
-            Back to File Selection
+            Back
           </button>
 
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Configure Categories</h1>
-            <p className="text-gray-600">Define how your conversations should be categorized</p>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">What categories are relevant to you?</h1>
           </div>
         </nav>
 
@@ -245,14 +244,14 @@ export function Stage2Page() {
         {/* Bottom Actions */}
         <div className="border-t border-gray-200 pt-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleSkip}
                 className="text-gray-600 hover:bg-gray-100 px-4 py-2 rounded-md transition-colors duration-200"
               >
-                Skip Categorization
+                Skip
               </button>
-              <p className="text-xs text-gray-500 italic mt-1">
+              <p className="text-xs text-gray-500 italic">
                 Each new category will create an .md file
               </p>
             </div>
@@ -266,7 +265,7 @@ export function Stage2Page() {
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              Continue to Processing
+              Continue
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

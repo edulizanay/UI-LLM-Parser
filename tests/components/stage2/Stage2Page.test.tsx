@@ -60,9 +60,8 @@ describe('Stage2Page Component', () => {
     it('should render page header with navigation', () => {
       render(<Stage2Page />)
 
-      expect(screen.getByText('Configure Categories')).toBeInTheDocument()
-      expect(screen.getByText('Define how your conversations should be categorized')).toBeInTheDocument()
-      expect(screen.getByText('Back to File Selection')).toBeInTheDocument()
+      expect(screen.getByText('What categories are relevant to you?')).toBeInTheDocument()
+      expect(screen.getByText('Back')).toBeInTheDocument()
     })
 
     it('should render simplified two-section layout', () => {
@@ -76,9 +75,9 @@ describe('Stage2Page Component', () => {
     it('should render bottom actions section', () => {
       render(<Stage2Page />)
 
-      expect(screen.getByText('Skip Categorization')).toBeInTheDocument()
+      expect(screen.getByText('Skip')).toBeInTheDocument()
       expect(screen.getByText('Each new category will create an .md file')).toBeInTheDocument()
-      expect(screen.getByText('Continue to Processing')).toBeInTheDocument()
+      expect(screen.getByText('Continue')).toBeInTheDocument()
     })
   })
 
@@ -86,7 +85,7 @@ describe('Stage2Page Component', () => {
     it('should navigate back to Stage 1 when back button is clicked', () => {
       render(<Stage2Page />)
 
-      const backButton = screen.getByText('Back to File Selection')
+      const backButton = screen.getByText('Back')
       fireEvent.click(backButton)
 
       expect(mockRouterPush).toHaveBeenCalledWith('/parse')
@@ -95,7 +94,7 @@ describe('Stage2Page Component', () => {
     it('should have proper back button styling with icon', () => {
       render(<Stage2Page />)
 
-      const backButton = screen.getByText('Back to File Selection')
+      const backButton = screen.getByText('Back')
       expect(backButton).toHaveClass('text-gray-600')
       expect(screen.getByTestId('arrow-left-icon')).toBeInTheDocument()
     })
@@ -248,7 +247,7 @@ describe('Stage2Page Component', () => {
     it('should have skip button with proper styling', () => {
       render(<Stage2Page />)
 
-      const skipButton = screen.getByText('Skip Categorization')
+      const skipButton = screen.getByText('Skip')
       expect(skipButton).toHaveClass('text-gray-600')
       expect(skipButton).toHaveAttribute('type', 'button')
     })
@@ -256,7 +255,7 @@ describe('Stage2Page Component', () => {
     it('should navigate to next stage when skip is clicked', () => {
       render(<Stage2Page />)
 
-      const skipButton = screen.getByText('Skip Categorization')
+      const skipButton = screen.getByText('Skip')
       fireEvent.click(skipButton)
 
       expect(mockRouterPush).toHaveBeenCalledWith('/?completed=categorization-skipped')
@@ -265,7 +264,7 @@ describe('Stage2Page Component', () => {
     it('should disable continue button when no categories selected', () => {
       render(<Stage2Page />)
 
-      const continueButton = screen.getByText('Continue to Processing')
+      const continueButton = screen.getByText('Continue')
       expect(continueButton).toBeDisabled()
       expect(continueButton).toHaveClass('bg-gray-400', 'cursor-not-allowed')
     })
@@ -277,7 +276,7 @@ describe('Stage2Page Component', () => {
       fireEvent.click(businessCategory)
 
       await waitFor(() => {
-        const continueButton = screen.getByText('Continue to Processing')
+        const continueButton = screen.getByText('Continue')
         expect(continueButton).not.toBeDisabled()
         expect(continueButton).toHaveClass('bg-blue-600')
       })
@@ -290,7 +289,7 @@ describe('Stage2Page Component', () => {
       fireEvent.click(businessCategory)
 
       await waitFor(() => {
-        const continueButton = screen.getByText('Continue to Processing')
+        const continueButton = screen.getByText('Continue')
         fireEvent.click(continueButton)
       })
 
@@ -323,14 +322,14 @@ describe('Stage2Page Component', () => {
     it('should have proper container max width', () => {
       render(<Stage2Page />)
 
-      const container = screen.getByText('Configure Categories').closest('.max-w-7xl')
+      const container = screen.getByText('What categories are relevant to you?').closest('.max-w-7xl')
       expect(container).toBeInTheDocument()
     })
 
     it('should have proper responsive layout', () => {
       render(<Stage2Page />)
 
-      const container = screen.getByText('Configure Categories').closest('.max-w-7xl')
+      const container = screen.getByText('What categories are relevant to you?').closest('.max-w-7xl')
       expect(container).toHaveClass('mx-auto', 'px-4')
     })
   })
@@ -339,7 +338,7 @@ describe('Stage2Page Component', () => {
     it('should have proper heading structure', () => {
       render(<Stage2Page />)
 
-      const mainHeading = screen.getByText('Configure Categories')
+      const mainHeading = screen.getByText('What categories are relevant to you?')
       expect(mainHeading.tagName).toBe('H1')
 
       // No section headings in simplified design
@@ -351,7 +350,7 @@ describe('Stage2Page Component', () => {
     it('should have proper focus management', async () => {
       render(<Stage2Page />)
 
-      const backButton = screen.getByText('Back to File Selection')
+      const backButton = screen.getByText('Back')
       backButton.focus()
       expect(document.activeElement).toBe(backButton)
     })

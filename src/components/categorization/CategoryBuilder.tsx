@@ -186,29 +186,6 @@ export function CategoryBuilder({
         )}
       </div>
 
-      {/* Selected Categories - only show if any are selected */}
-      {selectedCategories.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex flex-wrap gap-2">
-            {selectedCategories.map((category) => (
-              <div
-                key={`${category.type}-${category.id}`}
-                data-category-id={category.id}
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getCategoryPillColor(category.type, true)}`}
-              >
-                <span>{category.name}</span>
-                <button
-                  onClick={() => onCategoryRemove(category)}
-                  className="hover:bg-black hover:bg-opacity-10 rounded-full p-0.5 transition-colors duration-150"
-                  aria-label={`Remove ${category.name} category`}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
