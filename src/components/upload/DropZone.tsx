@@ -103,10 +103,10 @@ export function DropZone({ onFileUpload, error, maxFileSize = 10 }: DropZoneProp
           flex flex-col items-center justify-center
           cursor-pointer transition-all duration-200
           ${isDragging
-            ? 'border-primary-blue bg-blue-50'
+            ? 'border-primary-blue bg-primary-blue/5'
             : displayError
-            ? 'border-red-300 bg-red-50'
-            : 'border-border-default bg-surface-white hover:border-border-hover hover:bg-gray-50'
+            ? 'border-state-error bg-state-error-bg'
+            : 'border-border-default bg-surface-white hover:border-border-hover hover:bg-surface-background'
           }
         `}
       >
@@ -117,7 +117,7 @@ export function DropZone({ onFileUpload, error, maxFileSize = 10 }: DropZoneProp
             isDragging
               ? 'text-primary-blue animate-pulse'
               : displayError
-              ? 'text-red-400'
+              ? 'text-state-error'
               : 'text-text-muted'
           }`}
         />
@@ -128,7 +128,7 @@ export function DropZone({ onFileUpload, error, maxFileSize = 10 }: DropZoneProp
             isDragging
               ? 'text-primary-blue font-medium'
               : displayError
-              ? 'text-red-600'
+              ? 'text-state-error'
               : 'text-text-secondary'
           }`}>
             {isDragging
@@ -159,9 +159,9 @@ export function DropZone({ onFileUpload, error, maxFileSize = 10 }: DropZoneProp
 
       {/* Error Display */}
       {displayError && (
-        <div data-testid="upload-error" className="flex items-center gap-ds-small p-ds-small rounded-ds-sm bg-red-50 border border-red-200">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <p className="text-ds-small text-red-700">{displayError}</p>
+        <div data-testid="upload-error" className="flex items-center gap-ds-small bg-state-error-bg border border-state-error/20 rounded-ds-md p-ds-small">
+          <AlertCircle className="w-4 h-4 text-state-error flex-shrink-0" />
+          <p className="text-ds-small text-state-error">{displayError}</p>
         </div>
       )}
     </div>

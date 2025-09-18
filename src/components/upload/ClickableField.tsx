@@ -3,6 +3,8 @@
 
 'use client'
 
+import { getFieldClasses as getUtilFieldClasses } from '@/lib/fieldUtils'
+
 interface ClickableFieldProps {
   fieldName: string
   fieldType: 'computer_friendly' | 'llm_friendly'
@@ -31,35 +33,25 @@ export function ClickableField({
     if (!isSelected) {
       return `${baseClasses} ${
         isHovered
-          ? 'bg-gray-200 border-gray-300 text-gray-600 opacity-60'
-          : 'bg-gray-100 border-gray-200 text-gray-500 opacity-40'
+          ? 'bg-text-muted/20 border-text-muted text-text-muted opacity-60'
+          : 'bg-text-muted/10 border-text-muted text-text-muted opacity-40'
       }`
     }
 
     if (isMessages) {
-      // Special slate styling for messages field
+      // Special styling for messages field using design tokens
       return `${baseClasses} ${
         isHovered
-          ? 'bg-slate-200 border-slate-300 text-slate-800'
-          : 'bg-slate-100 border-slate-200 text-slate-700'
+          ? 'bg-surface-messages-hover border-border-default text-text-primary'
+          : 'bg-surface-messages border-border-default text-text-primary'
       }`
     }
 
-    if (fieldType === 'computer_friendly') {
-      // Blue styling for computer-friendly fields
-      return `${baseClasses} ${
-        isHovered
-          ? 'bg-blue-200 border-blue-300 text-blue-900'
-          : 'bg-blue-100 border-blue-200 text-blue-800'
-      }`
-    } else {
-      // Warm red styling for LLM-friendly fields
-      return `${baseClasses} ${
-        isHovered
-          ? 'bg-red-200 border-red-300 text-red-900'
-          : 'bg-red-100 border-red-200 text-red-800'
-      }`
-    }
+    // Use design token utilities for field categorization
+    const utilClasses = getUtilFieldClasses(fieldType, isSelected, !isSelected, true)
+    return `${baseClasses} ${utilClasses} ${
+      isHovered ? 'brightness-110' : ''
+    }`
   }
 
   return (

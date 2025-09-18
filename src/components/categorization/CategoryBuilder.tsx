@@ -70,22 +70,22 @@ export function CategoryBuilder({
     if (isSelected) {
       switch (type) {
         case 'computer_friendly':
-          return 'bg-blue-100 text-blue-800 border-blue-300'
+          return 'bg-field-computer-friendly/20 text-field-computer-friendly border-field-computer-friendly/30'
         case 'llm_friendly':
-          return 'bg-red-100 text-red-800 border-red-300'
+          return 'bg-field-llm-friendly/20 text-field-llm-friendly border-field-llm-friendly/30'
         case 'custom':
-          return 'bg-gray-100 text-gray-800 border-gray-300'
+          return 'bg-text-muted/20 text-text-primary border-text-muted/30'
         default:
-          return 'bg-gray-100 text-gray-800 border-gray-300'
+          return 'bg-text-muted/20 text-text-primary border-text-muted/30'
       }
     } else {
       switch (type) {
         case 'computer_friendly':
-          return 'bg-white text-blue-700 border-blue-200 hover:bg-blue-50'
+          return 'bg-surface-white text-field-computer-friendly border-field-computer-friendly/20 hover:bg-field-computer-friendly/5'
         case 'llm_friendly':
-          return 'bg-white text-red-700 border-red-200 hover:bg-red-50'
+          return 'bg-surface-white text-field-llm-friendly border-field-llm-friendly/20 hover:bg-field-llm-friendly/5'
         default:
-          return 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+          return 'bg-surface-white text-text-secondary border-border-default hover:bg-surface-background'
       }
     }
   }
@@ -172,7 +172,7 @@ export function CategoryBuilder({
               }
             }}
             placeholder="work_projects"
-            className="px-3 py-2 border border-gray-300 rounded-full text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none min-w-32"
+            className="px-3 py-2 border border-border-default rounded-full text-sm focus:border-border-focus focus:ring-2 focus:ring-border-focus/20 focus:outline-none min-w-32"
             autoFocus
           />
         ) : (

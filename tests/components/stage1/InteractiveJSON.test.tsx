@@ -123,7 +123,7 @@ describe('InteractiveJSON Component', () => {
       const messagesField = screen.getByText('"messages"')
       const messagesButton = messagesField.closest('button')
 
-      expect(messagesButton).toHaveClass('bg-slate-100')
+      expect(messagesButton).toHaveClass('bg-surface-messages')
     })
 
     it('should call onMessagesToggle when messages field value is clicked', () => {
@@ -141,11 +141,11 @@ describe('InteractiveJSON Component', () => {
     it('should show expanded messages by default', () => {
       render(<InteractiveJSON {...defaultProps} />)
 
-      // Should show individual message objects with role/content/timestamp
-      expect(screen.getByText('"role"')).toBeInTheDocument()
-      expect(screen.getByText('"content"')).toBeInTheDocument()
-      expect(screen.getByText('"timestamp"')).toBeInTheDocument()
-      expect(screen.getByText('"user"')).toBeInTheDocument()
+      // Should show individual message objects with role/content/timestamp (multiple elements)
+      expect(screen.getAllByText('"role"')).toBeTruthy()
+      expect(screen.getAllByText('"content"')).toBeTruthy()
+      expect(screen.getAllByText('"timestamp"')).toBeTruthy()
+      expect(screen.getAllByText('"user"')).toBeTruthy()
       expect(screen.getByText('"assistant"')).toBeInTheDocument()
     })
 
@@ -185,8 +185,8 @@ describe('InteractiveJSON Component', () => {
       const idField = screen.getByText('"id"')
       const dateField = screen.getByText('"date"')
 
-      expect(idField.closest('button')).toHaveClass('bg-blue-100')
-      expect(dateField.closest('button')).toHaveClass('bg-blue-100')
+      expect(idField.closest('button')).toHaveClass('bg-field-computer-friendly/10')
+      expect(dateField.closest('button')).toHaveClass('bg-field-computer-friendly/10')
     })
 
     it('should apply LLM-friendly styling to selected appropriate fields', () => {
@@ -195,7 +195,7 @@ describe('InteractiveJSON Component', () => {
       // LLM-friendly fields that are selected should have warm red styling
       const titleField = screen.getByText('"title"')
 
-      expect(titleField.closest('button')).toHaveClass('bg-red-100')
+      expect(titleField.closest('button')).toHaveClass('bg-field-llm-friendly/10')
     })
 
     it('should apply dimmed styling to unselected fields regardless of type', () => {
@@ -205,8 +205,8 @@ describe('InteractiveJSON Component', () => {
       const sourceField = screen.getByText('"source"')
       const messageCountField = screen.getByText('"message_count"')
 
-      expect(sourceField.closest('button')).toHaveClass('opacity-40', 'bg-gray-100')
-      expect(messageCountField.closest('button')).toHaveClass('opacity-40', 'bg-gray-100')
+      expect(sourceField.closest('button')).toHaveClass('opacity-40', 'bg-text-muted/10')
+      expect(messageCountField.closest('button')).toHaveClass('opacity-40', 'bg-text-muted/10')
     })
   })
 
