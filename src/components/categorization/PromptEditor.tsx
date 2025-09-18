@@ -4,7 +4,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 
 interface SelectedCategory {
   type: 'computer_friendly' | 'llm_friendly' | 'custom'
@@ -19,13 +19,15 @@ interface PromptEditorProps {
   activeCategoryId: string | null
   onCategorySelect: (categoryId: string) => void
   onPromptEdit: (categoryId: string, prompt: string) => void
+  onCategoryRemove: (category: SelectedCategory) => void
 }
 
 export function PromptEditor({
   selectedCategories,
   activeCategoryId,
   onCategorySelect,
-  onPromptEdit
+  onPromptEdit,
+  onCategoryRemove
 }: PromptEditorProps) {
   const [editingStates, setEditingStates] = useState<Record<string, string>>({})
   const [selectedModel, setSelectedModel] = useState('llama-3.1-8b')
@@ -53,6 +55,10 @@ export function PromptEditor({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handlePromptSave(categoryId)
+      // Exit the text box by blurring the input
+      if (e.target instanceof HTMLInputElement) {
+        e.target.blur()
+      }
     }
   }
 
@@ -124,20 +130,30 @@ export function PromptEditor({
           const promptValue = isEditing ? editingStates[category.id] : (category.editable_prompt || getDefaultPrompt(category))
 
           return (
-            <div key={category.id} className="flex gap-4 items-center">
+            <div key={category.id} className="flex gap-4 items-center group">
               {/* Left Column - Category Name (28% width - reduced by 30% from 40%) */}
-              <div className="w-[28%]">
-                <button
-                  onClick={() => onCategorySelect(category.id)}
-                  aria-label={`${category.name} category`}
-                  className={`w-full px-3 py-2 text-right rounded-md transition-all duration-200 ${
-                    activeCategoryId === category.id
-                      ? 'bg-blue-50 text-blue-900 font-semibold'
-                      : 'text-gray-900 font-semibold hover:bg-gray-50'
-                  }`}
-                >
-                  {category.name}
-                </button>
+              <div className="w-[28%] relative">
+                <div className="flex items-center justify-end gap-2">
+                  {/* Hover X button - appears on the left when hovering */}
+                  <button
+                    onClick={() => onCategoryRemove(category)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 p-1"
+                    aria-label={`Remove ${category.name} category`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onCategorySelect(category.id)}
+                    aria-label={`${category.name} category`}
+                    className={`px-3 py-2 text-right rounded-md transition-all duration-200 ${
+                      activeCategoryId === category.id
+                        ? 'bg-blue-50 text-blue-900 font-semibold'
+                        : 'text-gray-900 font-semibold hover:bg-gray-50'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                </div>
               </div>
 
               {/* Right Column - Editable Prompt (72% width) */}

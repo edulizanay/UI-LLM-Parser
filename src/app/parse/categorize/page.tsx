@@ -238,6 +238,7 @@ export function Stage2Page() {
             activeCategoryId={activeCategoryId}
             onCategorySelect={setActiveCategoryId}
             onPromptEdit={handlePromptEdit}
+            onCategoryRemove={handleCategoryRemove}
           />
         </div>
 

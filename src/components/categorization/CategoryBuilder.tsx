@@ -94,23 +94,17 @@ export function CategoryBuilder({
     <div className="bg-white rounded-lg shadow-sm border p-6">
       {/* Horizontal Category Selection */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Computer-friendly categories */}
-        {computerCategories.map((category) => {
-          const categoryId = category.field_name
-          const categoryName = `${category.field_name.charAt(0).toUpperCase() + category.field_name.slice(1)}-based`
-          const selected = isSelected('computer_friendly', categoryId)
+        {/* Computer-friendly categories - only show unselected ones */}
+        {computerCategories
+          .filter(category => !isSelected('computer_friendly', category.field_name))
+          .map((category) => {
+            const categoryId = category.field_name
+            const categoryName = `${category.field_name.charAt(0).toUpperCase() + category.field_name.slice(1)}-based`
 
-          return (
-            <button
-              key={categoryId}
-              onClick={() => {
-                if (selected) {
-                  onCategoryRemove({
-                    type: 'computer_friendly',
-                    id: categoryId,
-                    name: categoryName
-                  })
-                } else {
+            return (
+              <button
+                key={categoryId}
+                onClick={() => {
                   onCategorySelect({
                     type: 'computer_friendly',
                     id: categoryId,
@@ -118,46 +112,37 @@ export function CategoryBuilder({
                     field_name: category.field_name,
                     categories: category.categories
                   })
-                }
-              }}
-              className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('computer_friendly', selected)}`}
-              aria-label={selected ? `Remove ${categoryName} category` : `Add ${categoryName} category`}
-            >
-              {categoryName}
-            </button>
-          )
-        })}
+                }}
+                className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('computer_friendly', false)}`}
+                aria-label={`Add ${categoryName} category`}
+              >
+                {categoryName}
+              </button>
+            )
+          })}
 
-        {/* LLM categories */}
-        {llmCategories.map((category) => {
-          const selected = isSelected('llm_friendly', category.category_name)
-
-          return (
-            <button
-              key={category.category_name}
-              onClick={() => {
-                if (selected) {
-                  onCategoryRemove({
-                    type: 'llm_friendly',
-                    id: category.category_name,
-                    name: category.category_name
-                  })
-                } else {
+        {/* LLM categories - only show unselected ones */}
+        {llmCategories
+          .filter(category => !isSelected('llm_friendly', category.category_name))
+          .map((category) => {
+            return (
+              <button
+                key={category.category_name}
+                onClick={() => {
                   onCategorySelect({
                     type: 'llm_friendly',
                     id: category.category_name,
                     name: category.category_name,
                     editable_prompt: category.editable_prompt
                   })
-                }
-              }}
-              className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('llm_friendly', selected)}`}
-              aria-label={selected ? `Remove ${category.category_name} category` : `Add ${category.category_name} category`}
-            >
-              {category.category_name}
-            </button>
-          )
-        })}
+                }}
+                className={`px-4 py-2 rounded-full border font-medium text-sm transition-all duration-200 ${getCategoryPillColor('llm_friendly', false)}`}
+                aria-label={`Add ${category.category_name} category`}
+              >
+                {category.category_name}
+              </button>
+            )
+          })}
 
         {/* Custom category input */}
         {showCustomInput ? (
