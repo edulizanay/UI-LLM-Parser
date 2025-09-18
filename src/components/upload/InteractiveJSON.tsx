@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { ClickableField } from './ClickableField'
 import { MessagesField } from './MessagesField'
+import { getTruncationClasses } from '@/lib/designTokens'
 
 interface ConversationData {
   id: string
@@ -45,17 +46,35 @@ export function InteractiveJSON({
     return text.substring(0, maxLength) + '...'
   }
 
+  const truncateArray = (arr: any[], maxItems: number = 2): { items: any[], truncated: boolean, totalCount: number } => {
+    return {
+      items: arr.slice(0, maxItems),
+      truncated: arr.length > maxItems,
+      totalCount: arr.length
+    }
+  }
+
   const formatValue = (value: any, fieldName: string): string => {
     if (typeof value === 'string') {
-      return `"${truncateText(value)}"`
+      // Don't truncate strings here - let CSS handle it
+      return `"${value}"`
     }
     if (typeof value === 'number') {
       return value.toString()
     }
-    if (typeof value === 'object' && value !== null && fieldName !== 'messages') {
-      return JSON.stringify(value, null, 2)
+    if (Array.isArray(value) && fieldName !== 'messages') {
+      const { items, truncated, totalCount } = truncateArray(value)
+      const formattedItems = items.map(item =>
+        typeof item === 'string' ? `"${truncateText(item, 40)}"` : JSON.stringify(item)
+      ).join(', ')
+      return `[${formattedItems}${truncated ? `, ... ${totalCount - items.length} more` : ''}]`
     }
-    return JSON.stringify(value)
+    if (typeof value === 'object' && value !== null && fieldName !== 'messages') {
+      const jsonString = JSON.stringify(value, null, 2)
+      return truncateText(jsonString)
+    }
+    const stringified = JSON.stringify(value)
+    return truncateText(stringified)
   }
 
   const getFieldType = (fieldName: string): 'computer_friendly' | 'llm_friendly' => {
@@ -71,6 +90,16 @@ export function InteractiveJSON({
     return 'computer_friendly'
   }
 
+  const shouldUseCSStruncation = (value: any, fieldName: string): boolean => {
+    // Use CSS truncation for strings that are likely to be long content
+    if (typeof value === 'string') {
+      // Use for LLM-friendly fields or long strings
+      const fieldType = getFieldType(fieldName)
+      return fieldType === 'llm_friendly' || value.length > 30
+    }
+    return false
+  }
+
   const renderField = (fieldName: string, value: any, isLast: boolean = false) => {
     const isSelected = selectedFields.includes(fieldName)
     const fieldType = getFieldType(fieldName)
@@ -78,7 +107,7 @@ export function InteractiveJSON({
 
     return (
       <div key={fieldName} className="flex items-start gap-2">
-        <div className="flex items-center gap-1">
+        <div className="flex items-start gap-1">
           <ClickableField
             fieldName={fieldName}
             fieldType={fieldType}
@@ -89,7 +118,7 @@ export function InteractiveJSON({
             onMouseEnter={() => setHoveredField(fieldName)}
             onMouseLeave={() => setHoveredField(null)}
           />
-          <span className="text-text-secondary">:</span>
+          <span className="text-text-secondary leading-none mt-[5px]">:</span>
         </div>
         <div className="flex-1">
           {isSelected ? (
@@ -101,17 +130,18 @@ export function InteractiveJSON({
                 isHovered={hoveredField === fieldName}
               />
             ) : (
-              <span className="text-text-secondary font-mono text-xs">
-                {formatValue(value, fieldName)}
+              <span className={`text-text-secondary font-mono text-xs leading-none mt-[5px] ${
+                shouldUseCSStruncation(value, fieldName) ? getTruncationClasses('fieldValue') : ''
+              }`}>
+                {formatValue(value, fieldName)}{!isLast && ','}
               </span>
             )
           ) : (
-            <span className="text-text-muted font-mono text-xs italic">
-              // field unselected
+            <span className="text-text-muted font-mono text-xs italic leading-none mt-[5px]">
+              // field unselected{!isLast && ','}
             </span>
           )}
         </div>
-        {!isLast && <span className="text-text-secondary">,</span>}
       </div>
     )
   }
@@ -144,10 +174,13 @@ export function InteractiveJSON({
       {/* Collapse State Indicator */}
       {selectedFields.includes('messages') && (
         <div className="mt-ds-small p-ds-small bg-blue-50 rounded-ds-sm border border-blue-200">
-          <p className="text-ds-small text-blue-700">
+          <p
+            className="text-ds-small text-blue-700 cursor-pointer hover:text-blue-900 transition-colors duration-200"
+            onClick={onMessagesToggle}
+          >
             {isMessagesCollapsed
-              ? 'Messages collapsed - entire conversation will be tagged as one unit'
-              : 'Messages expanded - individual messages available for separate processing'
+              ? 'Entire conversations will be tagged'
+              : 'Each message will receive a tag - click here to tag entire conversations instead'
             }
           </p>
         </div>

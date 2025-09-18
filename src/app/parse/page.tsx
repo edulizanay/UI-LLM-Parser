@@ -35,6 +35,7 @@ interface ProcessingStats {
 
 export default function Stage1Page() {
   const router = useRouter()
+  const [isClient, setIsClient] = useState(false)
   const { state, setters, updateState } = useStage1State()
   const { conversationData, selectedFields, contextDescription, isMessagesCollapsed } = state
   const {
@@ -50,6 +51,11 @@ export default function Stage1Page() {
     tokenCount: 0
   })
   const [error, setError] = useState<string | null>(null)
+
+  // Ensure client-side rendering for localStorage-dependent content
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Calculate statistics whenever selections change
   useEffect(() => {
@@ -192,13 +198,27 @@ export default function Stage1Page() {
             {!conversationData ? (
               <DropZone onFileUpload={handleFileUpload} error={error} />
             ) : (
-              <InteractiveJSON
-                conversation={conversationData}
-                selectedFields={selectedFields}
-                onFieldToggle={handleFieldToggle}
-                isMessagesCollapsed={isMessagesCollapsed}
-                onMessagesToggle={handleMessagesToggle}
-              />
+              isClient ? (
+                <InteractiveJSON
+                  conversation={conversationData}
+                  selectedFields={selectedFields}
+                  onFieldToggle={handleFieldToggle}
+                  isMessagesCollapsed={isMessagesCollapsed}
+                  onMessagesToggle={handleMessagesToggle}
+                />
+              ) : (
+                <div className="bg-surface-white rounded-ds-lg p-ds-medium">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="space-y-3">
+                      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                </div>
+              )
             )}
           </div>
 

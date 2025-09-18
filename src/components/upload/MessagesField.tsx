@@ -3,6 +3,8 @@
 
 'use client'
 
+import { getTruncationClasses } from '@/lib/designTokens'
+
 interface Message {
   role: string
   content: string
@@ -29,9 +31,9 @@ export function MessagesField({
   }
 
   const renderCollapsedMessages = () => {
-    // Merge messages into simplified format
+    // Merge messages into simplified format - no truncation, let CSS handle it
     const mergedMessages = messages.slice(0, 2).map(msg =>
-      `"${msg.role}": "${truncateContent(msg.content)}"`
+      `"${msg.role}": "${msg.content}"`
     )
 
     return (
@@ -40,7 +42,7 @@ export function MessagesField({
         <div className="ml-4">
           {mergedMessages.map((merged, index) => (
             <div key={index}>
-              <span>{merged}</span>
+              <span className={getTruncationClasses('messageContent')}>{merged}</span>
               {index < mergedMessages.length - 1 && <span>,</span>}
             </div>
           ))}
@@ -76,18 +78,17 @@ export function MessagesField({
                 <div>
                   <span className="text-field-llm-friendly">"content"</span>
                   <span>: </span>
-                  <span>"{truncateContent(message.content, 80)}"</span>
+                  <span className={getTruncationClasses('messageContent')}>"{message.content}"</span>
                   <span>,</span>
                 </div>
                 <div>
                   <span className="text-field-computer-friendly">"timestamp"</span>
                   <span>: </span>
                   <span>"{message.timestamp}"</span>
+                  {message.original_id && <span>,</span>}
                 </div>
                 {message.original_id && (
                   <div>
-                    <span>,</span>
-                    <br />
                     <span className="text-field-computer-friendly">"original_id"</span>
                     <span>: </span>
                     <span>"{message.original_id}"</span>

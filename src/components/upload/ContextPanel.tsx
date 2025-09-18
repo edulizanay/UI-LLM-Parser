@@ -125,7 +125,7 @@ export function ContextPanel({ fileData, onContextChange, initialValue = '' }: C
       />
 
       <p className="text-ds-micro text-text-muted mt-ds-small">
-        This context helps the system better understand and categorize your data.
+        The tagger will use this context
       </p>
     </div>
   )

@@ -34,7 +34,7 @@ export function ClickableField({
       return `${baseClasses} ${
         isHovered
           ? 'bg-text-muted/20 border-text-muted text-text-muted opacity-60'
-          : 'bg-text-muted/10 border-text-muted text-text-muted opacity-40'
+          : 'border-text-muted/30 text-text-muted opacity-40'
       }`
     }
 
@@ -43,14 +43,14 @@ export function ClickableField({
       return `${baseClasses} ${
         isHovered
           ? 'bg-surface-messages-hover border-border-default text-text-primary'
-          : 'bg-surface-messages border-border-default text-text-primary'
+          : 'border-border-default text-text-primary'
       }`
     }
 
-    // Use design token utilities for field categorization
-    const utilClasses = getUtilFieldClasses(fieldType, isSelected, !isSelected, true)
+    // Use design token utilities for field categorization - no background unless hovered
+    const utilClasses = getUtilFieldClasses(fieldType, isSelected, !isSelected, isHovered)
     return `${baseClasses} ${utilClasses} ${
-      isHovered ? 'brightness-110' : ''
+      isHovered ? '' : 'border-transparent'
     }`
   }
 

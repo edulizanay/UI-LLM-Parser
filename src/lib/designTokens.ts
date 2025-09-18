@@ -206,6 +206,35 @@ export interface FieldTypeConfig {
 }
 
 // =============================================================================
+// TRUNCATION UTILITIES
+// =============================================================================
+
+export const truncation = {
+  // CSS-only truncation classes
+  singleLine: {
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden' as const,
+    textOverflow: 'ellipsis' as const,
+  },
+
+  // Max widths for different field contexts
+  maxWidths: {
+    fieldValue: '300px',        // For regular field values
+    messageContent: '400px',    // For message content
+    metadata: '250px',         // For metadata fields
+    compact: '200px',          // For compact displays
+  },
+
+  // Responsive max widths
+  responsive: {
+    sm: '150px',   // Small screens
+    md: '250px',   // Medium screens
+    lg: '350px',   // Large screens
+    xl: '450px',   // Extra large screens
+  }
+} as const
+
+// =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
 
@@ -235,6 +264,34 @@ export const getFieldTypeClass = (type: FieldType): string => {
     default:
       return 'text-text-secondary'
   }
+}
+
+/**
+ * Get truncation styles for field values
+ */
+export const getTruncationStyles = (
+  context: keyof typeof truncation.maxWidths = 'fieldValue'
+): React.CSSProperties => {
+  return {
+    ...truncation.singleLine,
+    maxWidth: truncation.maxWidths[context],
+  }
+}
+
+/**
+ * Get Tailwind classes for truncation
+ */
+export const getTruncationClasses = (
+  context: keyof typeof truncation.maxWidths = 'fieldValue'
+): string => {
+  const maxWidthClass = {
+    fieldValue: 'max-w-[300px]',
+    messageContent: 'max-w-[400px]',
+    metadata: 'max-w-[250px]',
+    compact: 'max-w-[200px]',
+  }[context]
+
+  return `whitespace-nowrap overflow-hidden text-ellipsis ${maxWidthClass}`
 }
 
 /**
