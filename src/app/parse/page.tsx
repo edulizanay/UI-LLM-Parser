@@ -194,30 +194,21 @@ export default function Stage1Page() {
         <div className="flex justify-center">
           {/* Centered Main Content */}
           <div className="w-full max-w-4xl">
-            {!conversationData ? (
+            {!isClient ? (
+              // Show DropZone on server and before hydration to avoid mismatch
+              <DropZone onFileUpload={handleFileUpload} error={error} />
+            ) : !conversationData ? (
+              // Show DropZone after hydration if no data
               <DropZone onFileUpload={handleFileUpload} error={error} />
             ) : (
-              isClient ? (
-                <InteractiveJSON
-                  conversation={conversationData}
-                  selectedFields={selectedFields}
-                  onFieldToggle={handleFieldToggle}
-                  isMessagesCollapsed={isMessagesCollapsed}
-                  onMessagesToggle={handleMessagesToggle}
-                />
-              ) : (
-                <div className="bg-surface-white rounded-ds-lg p-ds-medium">
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                    <div className="space-y-3">
-                      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                    </div>
-                  </div>
-                </div>
-              )
+              // Show InteractiveJSON after hydration if data exists
+              <InteractiveJSON
+                conversation={conversationData}
+                selectedFields={selectedFields}
+                onFieldToggle={handleFieldToggle}
+                isMessagesCollapsed={isMessagesCollapsed}
+                onMessagesToggle={handleMessagesToggle}
+              />
             )}
           </div>
         </div>
@@ -226,8 +217,8 @@ export default function Stage1Page() {
         <div className="mt-ds-large pt-ds-medium border-t border-border-default">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-ds-medium">
 
-            {/* Processing Statistics - only show when file is uploaded */}
-            {conversationData && (
+            {/* Processing Statistics - only show when file is uploaded and client is hydrated */}
+            {isClient && conversationData && (
               <div
                 className="grid grid-cols-3 gap-ds-medium text-center"
                 data-testid="processing-stats"
@@ -259,28 +250,32 @@ export default function Stage1Page() {
               </div>
             )}
 
-            {/* Continue Button - always show, but disable when no file */}
-            <button
-              onClick={handleContinue}
-              disabled={!canContinue}
-              data-testid="continue-button"
-              className={`px-ds-large py-ds-medium rounded-ds-sm font-medium transition-all duration-200 ${
-                canContinue
-                  ? 'bg-primary-blue text-white hover:bg-primary-blue-hover focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
-                  : 'bg-border-default text-text-muted cursor-not-allowed'
-              }`}
-            >
-              Continue to Categorization
-            </button>
+            {/* Continue Button - only show after client hydration to avoid SSR mismatch */}
+            {isClient && (
+              <button
+                onClick={handleContinue}
+                disabled={!canContinue}
+                data-testid="continue-button"
+                className={`px-ds-large py-ds-medium rounded-ds-sm font-medium transition-all duration-200 ${
+                  canContinue
+                    ? 'bg-primary-blue text-white hover:bg-primary-blue-hover focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
+                    : 'bg-border-default text-text-muted cursor-not-allowed'
+                }`}
+              >
+                Continue to Categorization
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Inline Context Panel */}
-        <InlineContextPanel
-          fileData={conversationData}
-          onContextChange={handleContextChange}
-          initialValue={contextDescription}
-        />
+        {/* Inline Context Panel - only show after client hydration */}
+        {isClient && (
+          <InlineContextPanel
+            fileData={conversationData}
+            onContextChange={handleContextChange}
+            initialValue={contextDescription}
+          />
+        )}
       </main>
     </div>
   )
