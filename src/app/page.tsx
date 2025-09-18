@@ -10,8 +10,8 @@ import { PromptRefinerSection } from '@/components/dashboard/PromptRefinerSectio
 import { DragDropOverlay } from '@/components/dashboard/DragDropOverlay'
 import { getMockProjects, getMockProcessingStatus } from '@/lib/dashboardData'
 
-// Export named component for testing
-export function DashboardPage() {
+// Main dashboard page component
+export default function DashboardPage() {
   // Load mock data
   const projects = getMockProjects()
   const processingStatus = getMockProcessingStatus()
@@ -22,8 +22,8 @@ export function DashboardPage() {
       <DragDropOverlay />
 
       {/* Main dashboard content */}
-      <main className="min-h-screen bg-surface-background flex items-center justify-center">
-        <div className="max-w-[1000px] w-full p-4 grid grid-cols-2 gap-8 items-center">
+      <main className="min-h-screen bg-surface-background flex items-center justify-center" data-testid="dashboard-main">
+        <div className="max-w-[1000px] w-full p-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Left Column - Action Buttons */}
           <div className="flex flex-col items-center justify-center space-y-3">
             <HeroSection />
@@ -41,4 +41,3 @@ export function DashboardPage() {
   )
 }
 
-export default DashboardPage

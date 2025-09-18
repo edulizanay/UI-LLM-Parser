@@ -3,10 +3,28 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DashboardPage } from '@/app/page'
+import { useRouter } from 'next/navigation'
+import DashboardPage from '@/app/page'
 import { HeroSection } from '@/components/dashboard/HeroSection'
 import { ProjectGrid } from '@/components/dashboard/ProjectGrid'
 import { ProcessingStatus } from '@/components/dashboard/ProcessingStatus'
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
+
+const mockPush = jest.fn()
+const mockBack = jest.fn()
+
+beforeEach(() => {
+  (useRouter as jest.Mock).mockReturnValue({
+    push: mockPush,
+    back: mockBack,
+  })
+  mockPush.mockClear()
+  mockBack.mockClear()
+})
 
 describe('Dashboard Page', () => {
   it('should render the main dashboard with three zones', () => {
@@ -77,16 +95,24 @@ describe('Project Grid', () => {
       id: '1',
       name: 'Family Conversations 2023',
       status: 'completed' as const,
+      createdAt: new Date('2024-01-01'),
+      lastModified: new Date('2024-01-03'),
       fileCount: 3,
       categoriesCreated: 5,
+      conversationsProcessed: 150,
+      outputFiles: ['family_2023.md', 'categories.json'],
       processedDate: '3 days ago'
     },
     {
       id: '2',
       name: 'Work Projects',
       status: 'processing' as const,
+      createdAt: new Date('2024-01-10'),
+      lastModified: new Date(),
       fileCount: 1,
       categoriesCreated: 2,
+      conversationsProcessed: 75,
+      outputFiles: ['work_partial.md'],
       processedDate: 'In progress'
     }
   ]
@@ -205,10 +231,11 @@ describe('Drag and Drop Overlay', () => {
     render(<DashboardPage />)
 
     const file = new File(['test content'], 'test.json', { type: 'application/json' })
+    const dataTransfer = new DataTransfer()
+    dataTransfer.items.add(file)
     const dropEvent = new DragEvent('drop', {
-      dataTransfer: new DataTransfer()
+      dataTransfer
     })
-    dropEvent.dataTransfer!.files = [file] as any
 
     document.dispatchEvent(dropEvent)
 

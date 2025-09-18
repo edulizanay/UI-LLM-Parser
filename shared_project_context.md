@@ -72,6 +72,16 @@ This architecture prevents hardcoded values and ensures consistency across all c
 - **Status indicators:** 4-8px padding, 12px border-radius, small font
 - **Interactive feedback:** 0.2s transitions, hover state changes
 
+### Stage 1 Upload Interface Patterns
+- **Upload Zones:** 280px height, dashed borders (gray-300 default, blue active), 12px border-radius
+- **Field Categories:** Blue badges for computer-friendly, warm red for LLM-friendly, slate for messages
+- **Field Selection:** Checkboxes with real-time visual feedback, 40% opacity when unselected
+- **Messages Field Special:** Distinct slate background with hover states for collapse functionality
+- **Smart Placeholders:** Italic, 60% opacity, context-aware text generation
+- **Data Examples:** Monospace code blocks, 13px font, categorized field colors
+- **Processing Stats:** 3-column grid, large numbers (24px bold), small labels (12px uppercase)
+- **Context Panel:** Sticky positioning, 120px textarea, auto-generating placeholders
+
 ### Special Categorization Colors
 - **Computer-friendly fields:** Blue spectrum (`#1e40af` to `#3b82f6`)
 - **LLM-friendly fields:** Warm spectrum (`#dc2626` to `#f87171`)
@@ -231,6 +241,32 @@ interface FieldSelectionState {
 - URL params: `/parse?file=${fileName}&fields=${selectedFieldsCSV}`
 - Context API: `ParsingFlowContext` for cross-component state
 
+### Stage 1 Component Integration Requirements
+
+**DropZone.tsx Dependencies:**
+- File validation for JSON format
+- Drag/drop state management with visual feedback
+- Error handling for invalid files
+- Integration with file analysis system
+
+**FieldSelector.tsx Dependencies:**
+- Field categorization from `claude_stage1.json` mock data
+- Real-time statistics updates from `claude_stage1_statistics_scenarios.json`
+- Messages field collapse/expand functionality
+- Visual distinction for computer-friendly vs LLM-friendly fields
+
+**FilePreview.tsx Dependencies:**
+- JSON structure display with syntax highlighting
+- Field selection state management
+- Dynamic example filtering based on selected fields
+- Integration with field categorization colors
+
+**ContextPanel.tsx Dependencies:**
+- Smart placeholder generation from `context_placeholders.json`
+- File type detection and contextual suggestions
+- User input preservation and editing capabilities
+- Integration with Stage 2 data handoff
+
 ### Integration Touchpoints
 
 **Dashboard → Stage Flow:**
@@ -260,28 +296,29 @@ Parse Flow:
 
 ### Development Roadmap & Yuki Handoff Points
 
-**Phase 2: Dashboard Implementation** (Next Priority)
-- [ ] **Yuki Handoff**: Dashboard layout and component designs
-- [ ] **Planning Agent**: Implement Dashboard components
-  - ProjectCard.tsx with mock project data
-  - ProcessingStatus.tsx with loading states
-  - QuickActions.tsx with upload CTAs
-  - Navigation to parse flow and prompt refiner
+**Phase 2: Dashboard Implementation** ✅
+- [x] **Yuki Handoff**: Dashboard layout and component designs ✅
+- [x] **Planning Agent**: Implement Dashboard components ✅
+  - ProjectCard.tsx with mock project data ✅
+  - ProcessingStatus.tsx with loading states ✅
+  - QuickActions.tsx with upload CTAs ✅
+  - Navigation to parse flow and prompt refiner ✅
 
-**Phase 3: Stage 1 Implementation**
-- [ ] **Yuki Handoff**: Upload interface and field selection designs
-- [ ] **Planning Agent**: Core upload functionality
-  - DropZone.tsx with drag/drop support
-  - FilePreview.tsx with JSON structure display
-  - FieldSelector.tsx with categorization colors
-  - ContextPanel.tsx with smart placeholders
+**Phase 3: Stage 1 Implementation** ✅
+- [x] **Yuki Handoff**: Upload interface and field selection designs ✅
+- [x] **Planning Agent**: Core upload functionality ✅
+  - DropZone.tsx with drag/drop support ✅
+  - InteractiveJSON.tsx with unified field selection ✅
+  - ClickableField.tsx with categorization colors ✅
+  - MessagesField.tsx with collapse/merge functionality ✅
+  - ContextPanel.tsx with smart placeholders ✅
 
-**Phase 4: Stage 2 Implementation**
-- [ ] **Yuki Handoff**: Categorization interface designs
-- [ ] **Planning Agent**: Category management system
-  - CategoryBuilder.tsx with computer/LLM suggestions
-  - PreviewPanel.tsx with mock categorization results
-  - PromptEditor.tsx with editable prompts
+**Phase 4: Stage 2 Implementation** ✅
+- [x] **Yuki Handoff**: Categorization interface designs ✅
+- [x] **Planning Agent**: Category management system ✅
+  - CategoryBuilder.tsx with computer/LLM suggestions ✅
+  - PreviewPanel.tsx with mock categorization results ✅
+  - PromptEditor.tsx with editable prompts ✅
 
 **Phase 5: Integration & Polish**
 - [ ] **Both Agents**: Cross-stage navigation and state persistence
@@ -318,6 +355,42 @@ Parse Flow:
 - mockData.ts: Mock data integration from JSON files
 - Test suite: 23 passing tests for design token architecture
 
+**✅ Phase 3 (Stage 1 Design & Implementation):**
+- Stage 1 complete design specifications with all component patterns
+- Upload interface patterns with drag/drop states
+- Field categorization system with computer/LLM-friendly visual distinction
+- Smart placeholder system for context generation
+- Processing statistics with real-time updates
+- Cross-stage data flow interface definitions
+- Complete Stage 1 implementation with TDD test coverage:
+  - DropZone.tsx: File upload with drag/drop and validation
+  - InteractiveJSON.tsx: Unified field selection interface
+  - ClickableField.tsx: Field categorization with color coding
+  - MessagesField.tsx: Collapse/merge functionality
+  - ContextPanel.tsx: Smart placeholder generation and input
+  - Stage1Page: Complete workflow integration
+
+**✅ Phase 4 (Stage 2 Design & Implementation):**
+- Stage 2 complete design specifications with three-column layout
+- Category selection interface with computer/LLM-friendly proposals
+- Real-time preview functionality with conversation examples
+- Prompt editing system with inline configuration
+- Cross-stage data persistence and navigation
+- Complete Stage 2 implementation with TDD test coverage:
+  - CategoryBuilder.tsx: Computer/LLM category proposals with selection UI
+  - PreviewPanel.tsx: Real-time categorization preview with statistics *(Removed in redesign)*
+  - PromptEditor.tsx: Two-column prompt configuration interface
+  - Stage2Page: Complete categorization workflow integration
+
+**✅ Phase 4 Redesign & Enhancement (September 2025):**
+- Simplified UI with horizontal pill-based category selection
+- Removed preview panel complexity for cleaner interface
+- Enhanced prompt editor with all categories visible simultaneously
+- Adjusted column widths (28% category names, 72% prompts)
+- LLM-focused default prompts with "Choose this option when..." format
+- Added model selection dropdown with cost and time estimates
+- Improved space efficiency and user experience
+
 ### Established Patterns
 **Design Token Usage:**
 - All colors, spacing, typography through TypeScript imports
@@ -336,7 +409,7 @@ Parse Flow:
 
 **Yuki Design - Component Visual Specifications:**
 - Dashboard layout: Card grid vs. list view for projects
-- Upload interface: Side-by-side vs. tabbed layout for file preview
+- Upload interface: Side-by-side vs. tabbed layout for file preview ✅ (Decided: Side-by-side)
 - Stage navigation: Breadcrumbs vs. progress indicators
 
 ---
@@ -391,5 +464,23 @@ Logs:
 - 2025-09-17 - Planning Agent: Defined complete Next.js project structure with feature-based organization
 - 2025-09-17 - Planning Agent: Established state management approach using local state + persistence
 - 2025-09-17 - Planning Agent: Created development roadmap with clear Yuki handoff points for Phases 2-5
+- 2025-09-17 - Planning Agent: Completed Phase 2 Dashboard implementation with all components (HeroSection, ProcessingStatus, ProjectGrid, PromptRefinerSection, DragDropOverlay)
+- 2025-09-17 - Yuki: Designed Stage 1 upload and field selection interface with complete specifications
+- 2025-09-17 - Yuki: Established upload zone patterns with drag/drop states and visual feedback
+- 2025-09-17 - Yuki: Created field categorization system with blue/warm color coding and messages field special handling
+- 2025-09-17 - Yuki: Designed smart placeholder system for context panel with auto-generation capabilities
+- 2025-09-17 - Yuki: Specified processing statistics panel with real-time updates and collapse/expand behavior
+- 2025-09-17 - Yuki: Defined Stage 1 → Stage 2 data flow interface and integration requirements
+- 2025-09-17 - Planning Agent: Completed Stage 1 implementation with full TDD coverage (InteractiveJSON, ClickableField, MessagesField, DropZone, ContextPanel)
+- 2025-09-17 - Yuki: Designed Stage 2 categorization and preview interface with three-column layout specifications
+- 2025-09-17 - Yuki: Established category selection patterns with computer/LLM-friendly visual distinction and custom creation
+- 2025-09-17 - Yuki: Created prompt editing system with two-column configuration and inline editing interactions
+- 2025-09-17 - Yuki: Designed real-time preview panel with conversation examples and statistics display
+- 2025-09-17 - Planning Agent: Implemented Stage 2 with complete categorization workflow (CategoryBuilder, PromptEditor, PreviewPanel)
+- 2025-09-17 - Planning Agent: Redesigned Stage 2 interface for improved UX with horizontal pill selection and simplified layout
+- 2025-09-17 - Planning Agent: Removed PreviewPanel component and enhanced PromptEditor to show all categories simultaneously
+- 2025-09-17 - Planning Agent: Added model selection dropdown with cost/time estimates (Llama 3.1 8B/70B, GPT-4o Mini)
+- 2025-09-17 - Planning Agent: Updated column layout to 28%/72% distribution for better space utilization
+- 2025-09-17 - Planning Agent: Implemented LLM-focused default prompts with "Choose this option when..." format
 
 *[Add entries chronologically]*

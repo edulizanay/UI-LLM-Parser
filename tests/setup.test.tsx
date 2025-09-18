@@ -2,24 +2,42 @@
 // ABOUTME: Tests that React components can be rendered and Jest configuration is correct
 
 import { render, screen } from '@testing-library/react'
+import { useRouter } from 'next/navigation'
 import Home from '@/app/page'
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
+
+const mockPush = jest.fn()
+const mockBack = jest.fn()
+
+beforeEach(() => {
+  (useRouter as jest.Mock).mockReturnValue({
+    push: mockPush,
+    back: mockBack,
+  })
+})
 
 describe('Setup Tests', () => {
   it('should render the home page without crashing', () => {
     render(<Home />)
 
-    const heading = screen.getByRole('heading', {
-      name: /conversation parser platform/i,
-    })
-
-    expect(heading).toBeInTheDocument()
+    // Check that the main dashboard element renders
+    const main = screen.getByTestId('dashboard-main')
+    expect(main).toBeInTheDocument()
   })
 
-  it('should show phase 0 complete message', () => {
+  it('should show primary navigation elements', () => {
     render(<Home />)
 
-    const message = screen.getByText(/phase 0 complete - design tokens architecture implemented/i)
+    // Check for the main CTA button
+    const parseButton = screen.getByRole('link', { name: /parse new data/i })
+    expect(parseButton).toBeInTheDocument()
 
-    expect(message).toBeInTheDocument()
+    // Check for the prompt refiner link
+    const promptRefinerLink = screen.getByRole('link', { name: /refine your prompts/i })
+    expect(promptRefinerLink).toBeInTheDocument()
   })
 })
