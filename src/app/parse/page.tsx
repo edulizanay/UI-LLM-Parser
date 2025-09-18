@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { DropZone } from '@/components/upload/DropZone'
 import { InteractiveJSON } from '@/components/upload/InteractiveJSON'
-import { ContextPanel } from '@/components/upload/ContextPanel'
+import { InlineContextPanel } from '@/components/upload/InlineContextPanel'
 import { useStage1State } from '@/hooks/usePersistedState'
 
 interface ConversationData {
@@ -190,11 +190,10 @@ export default function Stage1Page() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-ds-medium" data-testid="stage1-main">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-ds-large">
-
-          {/* Left Column - Upload or Interactive JSON (2/3 width) */}
-          <div className="lg:col-span-2">
+      <main className="max-w-5xl mx-auto p-ds-medium" data-testid="stage1-main">
+        <div className="flex justify-center">
+          {/* Centered Main Content */}
+          <div className="w-full max-w-4xl">
             {!conversationData ? (
               <DropZone onFileUpload={handleFileUpload} error={error} />
             ) : (
@@ -220,19 +219,6 @@ export default function Stage1Page() {
                 </div>
               )
             )}
-          </div>
-
-          {/* Right Column - Context Panel (1/3 width) */}
-          <div>
-            <ContextPanel
-              fileData={conversationData ? {
-                name: 'conversation.json',
-                content: [conversationData],
-                detectedStructure: []
-              } : null}
-              onContextChange={handleContextChange}
-              initialValue={contextDescription}
-            />
           </div>
         </div>
 
@@ -288,6 +274,13 @@ export default function Stage1Page() {
             </button>
           </div>
         </div>
+
+        {/* Inline Context Panel */}
+        <InlineContextPanel
+          fileData={conversationData}
+          onContextChange={handleContextChange}
+          initialValue={contextDescription}
+        />
       </main>
     </div>
   )

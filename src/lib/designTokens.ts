@@ -285,13 +285,13 @@ export const getTruncationClasses = (
   context: keyof typeof truncation.maxWidths = 'fieldValue'
 ): string => {
   const maxWidthClass = {
-    fieldValue: 'max-w-[300px]',
-    messageContent: 'max-w-[400px]',
-    metadata: 'max-w-[250px]',
-    compact: 'max-w-[200px]',
+    fieldValue: 'max-w-[500px]',     // Increased from 300px for wider layout
+    messageContent: 'max-w-[600px]', // Increased from 350px for wider layout
+    metadata: 'max-w-[400px]',       // Increased from 250px for wider layout
+    compact: 'max-w-[300px]',        // Increased from 200px for wider layout
   }[context]
 
-  return `whitespace-nowrap overflow-hidden text-ellipsis ${maxWidthClass}`
+  return `whitespace-nowrap overflow-hidden text-ellipsis ${maxWidthClass} inline-block`
 }
 
 /**

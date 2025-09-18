@@ -118,7 +118,7 @@ export function InteractiveJSON({
             onMouseEnter={() => setHoveredField(fieldName)}
             onMouseLeave={() => setHoveredField(null)}
           />
-          <span className="text-text-secondary leading-none mt-[5px]">:</span>
+          <span className="text-text-secondary leading-none mt-1">:</span>
         </div>
         <div className="flex-1">
           {isSelected ? (
@@ -130,14 +130,14 @@ export function InteractiveJSON({
                 isHovered={hoveredField === fieldName}
               />
             ) : (
-              <span className={`text-text-secondary font-mono text-xs leading-none mt-[5px] ${
+              <span className={`text-text-secondary font-mono text-xs leading-none mt-1 ${
                 shouldUseCSStruncation(value, fieldName) ? getTruncationClasses('fieldValue') : ''
               }`}>
                 {formatValue(value, fieldName)}{!isLast && ','}
               </span>
             )
           ) : (
-            <span className="text-text-muted font-mono text-xs italic leading-none mt-[5px]">
+            <span className="text-text-muted font-mono text-xs italic leading-none mt-1">
               // field unselected{!isLast && ','}
             </span>
           )}
