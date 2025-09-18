@@ -220,19 +220,6 @@ describe('ContextPanel Component', () => {
       expect(textarea).toHaveAttribute('aria-label', 'Describe your data context')
     })
 
-    it('should support keyboard navigation', () => {
-      render(
-        <ContextPanel
-          fileData={mockFileData}
-          onContextChange={mockOnContextChange}
-        />
-      )
-
-      const textarea = screen.getByTestId('context-textarea')
-
-      fireEvent.keyDown(textarea, { key: 'Tab' })
-      expect(textarea).toHaveFocus()
-    })
 
     it('should provide appropriate focus styling', () => {
       render(

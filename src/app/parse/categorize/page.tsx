@@ -38,7 +38,7 @@ interface Stage1Data {
 export function Stage2Page() {
   const router = useRouter()
   const [stage1Data, setStage1Data] = useState<Stage1Data | null>(null)
-  const { state, setters } = useStage2State()
+  const { state, setters, updateState } = useStage2State()
   const { selectedCategories, activeCategoryId } = state
   const { selectedCategories: setSelectedCategories, activeCategoryId: setActiveCategoryId } = setters
   const [error, setError] = useState<string | null>(null)
@@ -112,8 +112,11 @@ export function Stage2Page() {
 
     if (!isAlreadySelected) {
       const newCategories = [...selectedCategories, category]
-      setSelectedCategories(newCategories)
-      setActiveCategoryId(category.id)
+      // Use updateState to set both fields atomically
+      updateState({
+        selectedCategories: newCategories,
+        activeCategoryId: category.id
+      })
     }
   }
 
@@ -121,11 +124,16 @@ export function Stage2Page() {
     const newCategories = selectedCategories.filter(
       cat => !(cat.type === categoryToRemove.type && cat.id === categoryToRemove.id)
     )
-    setSelectedCategories(newCategories)
 
-    if (activeCategoryId === categoryToRemove.id) {
-      setActiveCategoryId(newCategories.length > 0 ? newCategories[0].id : null)
-    }
+    const newActiveCategoryId = activeCategoryId === categoryToRemove.id
+      ? (newCategories.length > 0 ? newCategories[0].id : null)
+      : activeCategoryId
+
+    // Use updateState to set both fields atomically
+    updateState({
+      selectedCategories: newCategories,
+      activeCategoryId: newActiveCategoryId
+    })
   }
 
   const handleCustomCategoryAdd = (categoryName: string) => {
@@ -136,8 +144,12 @@ export function Stage2Page() {
       editable_prompt: 'Choose this option when conversations match this category'
     }
     const newCategories = [...selectedCategories, customCategory]
-    setSelectedCategories(newCategories)
-    setActiveCategoryId(customCategory.id)
+
+    // Use updateState to set both fields atomically
+    updateState({
+      selectedCategories: newCategories,
+      activeCategoryId: customCategory.id
+    })
   }
 
   const handlePromptEdit = (categoryId: string, prompt: string) => {

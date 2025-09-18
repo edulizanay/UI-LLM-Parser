@@ -120,7 +120,7 @@ export default function Stage1Page() {
       }
 
       // Estimate token count from message content
-      conversationData.messages.forEach(message => {
+      conversationData.messages.forEach((message: { content: string }) => {
         if (selectedFields.includes('messages')) {
           tokenCount += Math.ceil(message.content.length / 4) // Rough token estimation
         }

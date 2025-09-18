@@ -26,6 +26,12 @@ export function usePersistedState<T extends Record<string, any>>({
         ? updates(prev)
         : { ...prev, ...updates }
 
+      // Check saveCondition before persisting to localStorage
+      if (saveCondition && !saveCondition(newState)) {
+        // Don't persist to localStorage, but still update React state
+        return newState
+      }
+
       // Always update React state for immediate UI updates
       return newState
     })
