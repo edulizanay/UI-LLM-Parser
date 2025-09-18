@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+}
+
 @layer base {
   :root {
     /* Design System Variables from designTokens.ts */
