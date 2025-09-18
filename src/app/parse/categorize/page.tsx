@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { CategoryBuilder } from '@/components/categorization/CategoryBuilder'
 import { PromptEditor } from '@/components/categorization/PromptEditor'
+import { useStage2State } from '@/hooks/usePersistedState'
 
 interface SelectedCategory {
   type: 'computer_friendly' | 'llm_friendly' | 'custom'
@@ -37,8 +38,9 @@ interface Stage1Data {
 export function Stage2Page() {
   const router = useRouter()
   const [stage1Data, setStage1Data] = useState<Stage1Data | null>(null)
-  const [selectedCategories, setSelectedCategories] = useState<SelectedCategory[]>([])
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
+  const { state, setters } = useStage2State()
+  const { selectedCategories, activeCategoryId } = state
+  const { selectedCategories: setSelectedCategories, activeCategoryId: setActiveCategoryId } = setters
   const [error, setError] = useState<string | null>(null)
 
   // Mock data from claude_stage2.json
@@ -97,29 +99,11 @@ export function Stage2Page() {
 
       const parsedData = JSON.parse(savedData)
       setStage1Data(parsedData)
-
-      // Load existing Stage 2 state if available
-      const stage2State = localStorage.getItem('parsing-stage-2-state')
-      if (stage2State) {
-        const { selectedCategories: savedCategories, activeCategoryId: savedActive } = JSON.parse(stage2State)
-        setSelectedCategories(savedCategories || [])
-        setActiveCategoryId(savedActive || null)
-      }
     } catch (error) {
       console.error('Error loading Stage 1 data:', error)
       setError('Error loading previous stage data')
     }
   }, [router])
-
-  // Save Stage 2 state when it changes
-  useEffect(() => {
-    if (selectedCategories.length > 0 || activeCategoryId) {
-      localStorage.setItem('parsing-stage-2-state', JSON.stringify({
-        selectedCategories,
-        activeCategoryId
-      }))
-    }
-  }, [selectedCategories, activeCategoryId])
 
   const handleCategorySelect = (category: SelectedCategory) => {
     const isAlreadySelected = selectedCategories.some(

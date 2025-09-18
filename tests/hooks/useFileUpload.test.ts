@@ -1,331 +1,246 @@
-// ABOUTME: Tests for file upload hook functionality
-// ABOUTME: Tests file selection, validation, progress state, and error handling
+// ABOUTME: Test suite for useFileUpload hook - file handling, validation, and error states
+// ABOUTME: Tests file upload workflow, JSON parsing, field initialization, and error recovery
 
 import { renderHook, act } from '@testing-library/react'
+import { useFileUpload } from '@/hooks/useFileUpload'
 
-// Mock file upload hook - this should be implemented in src/hooks/useFileUpload.ts
-const useFileUpload = () => {
-  const [file, setFile] = React.useState<File | null>(null)
-  const [uploadProgress, setUploadProgress] = React.useState(0)
-  const [isUploading, setIsUploading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+// Mock File.prototype.text() for test environment
+global.File = class extends File {
+  private mockContent: string
 
-  const selectFile = (selectedFile: File) => {
-    setError(null)
-
-    // Validate file type
-    if (!selectedFile.type.includes('json')) {
-      setError('Please select a JSON file')
-      return false
-    }
-
-    // Validate file size (max 10MB)
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB')
-      return false
-    }
-
-    setFile(selectedFile)
-    return true
+  constructor(fileBits: any[], fileName: string, options: any = {}) {
+    super(fileBits, fileName, options)
+    this.mockContent = typeof fileBits[0] === 'string' ? fileBits[0] : '{}'
   }
 
-  const uploadFile = async (onProgress?: (progress: number) => void) => {
-    if (!file) return null
-
-    setIsUploading(true)
-    setUploadProgress(0)
-    setError(null)
-
-    try {
-      // Simulate upload progress
-      for (let i = 0; i <= 100; i += 10) {
-        setUploadProgress(i)
-        onProgress?.(i)
-        await new Promise(resolve => setTimeout(resolve, 50))
-      }
-
-      return file
-    } catch (err) {
-      setError('Upload failed')
-      return null
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const clearFile = () => {
-    setFile(null)
-    setUploadProgress(0)
-    setError(null)
-  }
-
-  const cancelUpload = () => {
-    setIsUploading(false)
-    setUploadProgress(0)
-  }
-
-  return {
-    file,
-    uploadProgress,
-    isUploading,
-    error,
-    selectFile,
-    uploadFile,
-    clearFile,
-    cancelUpload,
+  text(): Promise<string> {
+    return Promise.resolve(this.mockContent)
   }
 }
-
-// Mock React import for the test environment
-const React = {
-  useState: jest.fn(),
-}
-
-// Mock the useState calls
-const mockSetState = jest.fn()
-const mockUseState = (initial: any) => [initial, mockSetState]
-
-beforeEach(() => {
-  React.useState = jest.fn(mockUseState)
-  mockSetState.mockClear()
-})
 
 describe('useFileUpload Hook', () => {
-  describe('File Selection and Validation', () => {
-    it('should handle file selection and validation', () => {
+  describe('Initial State', () => {
+    it('should have correct initial state', () => {
       const { result } = renderHook(() => useFileUpload())
 
-      // Create a valid JSON file
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
-      })
-
-      act(() => {
-        const success = result.current.selectFile(validFile)
-        expect(success).toBe(true)
-      })
-
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
       expect(result.current.error).toBeNull()
-    })
-
-    it('should reject invalid file types', () => {
-      const { result } = renderHook(() => useFileUpload())
-
-      // Create an invalid file
-      const invalidFile = new File(['test'], 'test.txt', {
-        type: 'text/plain',
-      })
-
-      act(() => {
-        const success = result.current.selectFile(invalidFile)
-        expect(success).toBe(false)
-      })
-
-      expect(result.current.error).toBe('Please select a JSON file')
-    })
-
-    it('should reject files that are too large', () => {
-      const { result } = renderHook(() => useFileUpload())
-
-      // Create a large file (mock 11MB)
-      const largeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.json', {
-        type: 'application/json',
-      })
-
-      act(() => {
-        const success = result.current.selectFile(largeFile)
-        expect(success).toBe(false)
-      })
-
-      expect(result.current.error).toBe('File size must be less than 10MB')
     })
   })
 
-  describe('Upload Progress State', () => {
-    it('should manage upload progress state', async () => {
+  describe('File Upload', () => {
+    it('should process valid JSON file with conversations array', async () => {
       const { result } = renderHook(() => useFileUpload())
 
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
-      })
+      const validData = {
+        conversations: [{
+          id: 'conv1',
+          title: 'Test Conversation',
+          date: '2023-01-01',
+          messages: [
+            { role: 'user', content: 'Hello', timestamp: '2023-01-01T10:00:00Z' }
+          ]
+        }]
+      }
 
-      act(() => {
-        result.current.selectFile(validFile)
-      })
-
-      expect(result.current.uploadProgress).toBe(0)
-      expect(result.current.isUploading).toBe(false)
+      const file = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
 
       await act(async () => {
-        await result.current.uploadFile()
+        await result.current.uploadFile(file)
       })
 
-      expect(result.current.uploadProgress).toBe(100)
-      expect(result.current.isUploading).toBe(false)
+      expect(result.current.conversationData).toEqual(validData.conversations[0])
+      expect(result.current.selectedFields).toEqual(['id', 'title', 'date', 'messages'])
+      expect(result.current.error).toBeNull()
     })
 
-    it('should track upload progress with callback', async () => {
+    it('should process valid JSON file with flat array', async () => {
       const { result } = renderHook(() => useFileUpload())
-      const progressCallback = jest.fn()
 
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
-      })
+      const validData = [{
+        id: 'conv1',
+        title: 'Test Conversation',
+        messages: []
+      }]
 
-      act(() => {
-        result.current.selectFile(validFile)
-      })
+      const file = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
 
       await act(async () => {
-        await result.current.uploadFile(progressCallback)
+        await result.current.uploadFile(file)
       })
 
-      expect(progressCallback).toHaveBeenCalledWith(expect.any(Number))
-      expect(progressCallback).toHaveBeenCalledWith(100)
+      expect(result.current.conversationData).toEqual(validData[0])
+      expect(result.current.selectedFields).toEqual(['id', 'title', 'messages'])
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should handle empty file', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      const file = new File([''], 'empty.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
+      expect(result.current.error).toBe('File appears to be empty')
+    })
+
+    it('should handle invalid JSON', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      const file = new File(['invalid json'], 'invalid.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
+      expect(result.current.error).toBe('Error processing file: Invalid JSON format')
+    })
+
+    it('should handle file without conversations data', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      const file = new File([JSON.stringify({ other: 'data' })], 'other.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
+      expect(result.current.error).toBe('File must contain conversations data')
+    })
+
+    it('should handle empty conversations array', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      const file = new File([JSON.stringify({ conversations: [] })], 'empty.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
+      expect(result.current.error).toBe('No conversations found in file')
+    })
+  })
+
+  describe('Field Selection', () => {
+    beforeEach(async () => {
+      // Helper to set up a hook with uploaded data
+    })
+
+    it('should update selected fields', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      // First upload a file
+      const validData = { conversations: [{ id: 'conv1', title: 'Test', messages: [] }] }
+      const file = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      // Then update fields
+      act(() => {
+        result.current.setSelectedFields(['id', 'title'])
+      })
+
+      expect(result.current.selectedFields).toEqual(['id', 'title'])
+    })
+
+    it('should update selected fields with function', async () => {
+      const { result } = renderHook(() => useFileUpload())
+
+      // First upload a file
+      const validData = { conversations: [{ id: 'conv1', title: 'Test', messages: [] }] }
+      const file = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
+
+      await act(async () => {
+        await result.current.uploadFile(file)
+      })
+
+      // Then update fields with function
+      act(() => {
+        result.current.setSelectedFields(prev => prev.filter(field => field !== 'messages'))
+      })
+
+      expect(result.current.selectedFields).toEqual(['id', 'title'])
     })
   })
 
   describe('Error Handling', () => {
-    it('should provide error handling mechanisms', () => {
+    it('should clear error', async () => {
       const { result } = renderHook(() => useFileUpload())
 
-      // Test initial state
-      expect(result.current.error).toBeNull()
-
-      // Test error setting
-      const invalidFile = new File(['test'], 'test.txt', {
-        type: 'text/plain',
-      })
-
-      act(() => {
-        result.current.selectFile(invalidFile)
+      // First cause an error
+      const file = new File(['invalid'], 'invalid.json', { type: 'application/json' })
+      await act(async () => {
+        await result.current.uploadFile(file)
       })
 
       expect(result.current.error).toBeTruthy()
 
-      // Test error clearing
+      // Then clear it
       act(() => {
-        result.current.clearFile()
+        result.current.clearError()
       })
 
       expect(result.current.error).toBeNull()
     })
 
-    it('should handle upload failures gracefully', async () => {
+    it('should reset all state', async () => {
       const { result } = renderHook(() => useFileUpload())
 
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
-      })
-
-      act(() => {
-        result.current.selectFile(validFile)
-      })
-
-      // Mock upload failure
-      const originalUpload = result.current.uploadFile
-      result.current.uploadFile = jest.fn().mockRejectedValue(new Error('Network error'))
+      // First upload a file
+      const validData = { conversations: [{ id: 'conv1', title: 'Test', messages: [] }] }
+      const file = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
 
       await act(async () => {
-        const result_upload = await result.current.uploadFile()
-        expect(result_upload).toBeNull()
-      })
-    })
-  })
-
-  describe('Resource Cleanup', () => {
-    it('should cleanup resources on unmount', () => {
-      const { unmount } = renderHook(() => useFileUpload())
-
-      // Hook should not throw on unmount
-      expect(() => unmount()).not.toThrow()
-    })
-
-    it('should clear file state properly', () => {
-      const { result } = renderHook(() => useFileUpload())
-
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
+        await result.current.uploadFile(file)
       })
 
+      expect(result.current.conversationData).toBeTruthy()
+      expect(result.current.selectedFields.length).toBeGreaterThan(0)
+
+      // Then reset
       act(() => {
-        result.current.selectFile(validFile)
+        result.current.reset()
       })
 
-      expect(result.current.file).toBe(validFile)
-
-      act(() => {
-        result.current.clearFile()
-      })
-
-      expect(result.current.file).toBeNull()
-      expect(result.current.uploadProgress).toBe(0)
+      expect(result.current.conversationData).toBeNull()
+      expect(result.current.selectedFields).toEqual([])
       expect(result.current.error).toBeNull()
     })
-  })
 
-  describe('Upload Cancellation', () => {
-    it('should support upload cancellation', () => {
+    it('should clear error on new upload attempt', async () => {
       const { result } = renderHook(() => useFileUpload())
 
-      const validFile = new File(['{"test": true}'], 'test.json', {
-        type: 'application/json',
+      // First cause an error
+      const invalidFile = new File(['invalid'], 'invalid.json', { type: 'application/json' })
+      await act(async () => {
+        await result.current.uploadFile(invalidFile)
       })
 
-      act(() => {
-        result.current.selectFile(validFile)
-      })
+      expect(result.current.error).toBeTruthy()
 
-      // Start upload (simulate)
-      act(() => {
-        // Simulate upload in progress
-        result.current.uploadFile()
-      })
-
-      // Cancel upload
-      act(() => {
-        result.current.cancelUpload()
-      })
-
-      expect(result.current.isUploading).toBe(false)
-      expect(result.current.uploadProgress).toBe(0)
-    })
-
-    it('should handle multiple cancel calls safely', () => {
-      const { result } = renderHook(() => useFileUpload())
-
-      act(() => {
-        result.current.cancelUpload()
-        result.current.cancelUpload()
-        result.current.cancelUpload()
-      })
-
-      // Should not throw or cause issues
-      expect(result.current.isUploading).toBe(false)
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('should handle upload without file selected', async () => {
-      const { result } = renderHook(() => useFileUpload())
+      // Then upload valid file
+      const validData = { conversations: [{ id: 'conv1', title: 'Test', messages: [] }] }
+      const validFile = new File([JSON.stringify(validData)], 'test.json', { type: 'application/json' })
 
       await act(async () => {
-        const upload_result = await result.current.uploadFile()
-        expect(upload_result).toBeNull()
-      })
-    })
-
-    it('should handle empty file names', () => {
-      const { result } = renderHook(() => useFileUpload())
-
-      const fileWithoutName = new File(['{"test": true}'], '', {
-        type: 'application/json',
+        await result.current.uploadFile(validFile)
       })
 
-      act(() => {
-        const success = result.current.selectFile(fileWithoutName)
-        expect(success).toBe(true) // Should still accept file
-      })
+      expect(result.current.error).toBeNull()
+      expect(result.current.conversationData).toBeTruthy()
     })
   })
 })

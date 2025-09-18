@@ -44,7 +44,7 @@ describe('DropZone Component', () => {
         dataTransfer: { items: [{ kind: 'file' }] }
       })
 
-      expect(uploadZone).toHaveClass('border-primary-blue', 'bg-blue-50')
+      expect(uploadZone).toHaveClass('border-primary-blue', 'bg-primary-blue/5')
     })
 
     it('should reset visual state on drag leave', () => {
@@ -58,7 +58,7 @@ describe('DropZone Component', () => {
       fireEvent.dragLeave(uploadZone)
 
       expect(uploadZone).toHaveClass('border-border-default')
-      expect(uploadZone).not.toHaveClass('border-primary-blue', 'bg-blue-50')
+      expect(uploadZone).not.toHaveClass('border-primary-blue', 'bg-primary-blue/5')
     })
 
     it('should handle valid JSON file drop', () => {

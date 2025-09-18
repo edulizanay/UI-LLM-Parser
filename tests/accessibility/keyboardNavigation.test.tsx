@@ -1,6 +1,7 @@
 // ABOUTME: Tests for keyboard navigation and accessibility compliance
 // ABOUTME: Verifies tab navigation, focus management, ARIA compliance, and screen reader support
 
+import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -121,7 +122,8 @@ const AccessibleForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
+    const isValid = validateForm()
+    if (isValid) {
       alert('Form submitted successfully!')
     }
   }
@@ -203,19 +205,32 @@ const AccessibleDataGrid = () => {
   const [selectedRow, setSelectedRow] = React.useState<number | null>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex = index
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedRow(Math.min(index + 1, data.length - 1))
+        nextIndex = Math.min(index + 1, data.length - 1)
+        setSelectedRow(nextIndex)
+        // Focus the next row
+        setTimeout(() => {
+          const nextRow = document.querySelector(`[data-testid="grid-row-${nextIndex}"]`) as HTMLElement
+          if (nextRow) nextRow.focus()
+        }, 0)
         break
       case 'ArrowUp':
         e.preventDefault()
-        setSelectedRow(Math.max(index - 1, 0))
+        nextIndex = Math.max(index - 1, 0)
+        setSelectedRow(nextIndex)
+        // Focus the previous row
+        setTimeout(() => {
+          const prevRow = document.querySelector(`[data-testid="grid-row-${nextIndex}"]`) as HTMLElement
+          if (prevRow) prevRow.focus()
+        }, 0)
         break
       case 'Enter':
       case ' ':
         e.preventDefault()
-        setSelectedRow(index)
+        setSelectedRow(selectedRow === index ? null : index)
         break
     }
   }
@@ -253,20 +268,7 @@ const AccessibleDataGrid = () => {
   )
 }
 
-// Mock React
-const React = {
-  useState: jest.fn(),
-  useEffect: jest.fn(),
-}
-
-const mockSetState = jest.fn()
-const mockUseState = (initial: any) => [initial, mockSetState]
-
-beforeEach(() => {
-  React.useState = jest.fn(mockUseState)
-  React.useEffect = jest.fn()
-  mockSetState.mockClear()
-})
+// No React mocking needed - use real React hooks for proper component behavior
 
 describe('Keyboard Navigation', () => {
   describe('Tab Navigation', () => {

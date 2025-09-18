@@ -1,6 +1,7 @@
 // ABOUTME: Tests for field selection hook functionality
 // ABOUTME: Tests field selection state, statistics calculation, validation, and localStorage persistence
 
+import React from 'react'
 import { renderHook, act } from '@testing-library/react'
 
 interface ProcessingStats {
@@ -81,7 +82,7 @@ const useFieldSelection = (conversationData: ConversationData | null) => {
     }
 
     if (selectedFields.includes('messages') && !conversationData?.messages?.length) {
-      return { isValid: false, error: 'Messages field is selected but no messages found' }
+      return { isValid: false, error: 'no messages found' }
     }
 
     return { isValid: true, error: null }

@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react'
 import { DropZone } from '@/components/upload/DropZone'
 import { InteractiveJSON } from '@/components/upload/InteractiveJSON'
 import { ContextPanel } from '@/components/upload/ContextPanel'
+import { useStage1State } from '@/hooks/usePersistedState'
 
 interface ConversationData {
   id: string
@@ -34,45 +35,21 @@ interface ProcessingStats {
 
 export default function Stage1Page() {
   const router = useRouter()
-  const [conversationData, setConversationData] = useState<ConversationData | null>(null)
-  const [selectedFields, setSelectedFields] = useState<string[]>([])
-  const [contextDescription, setContextDescription] = useState('')
-  const [isMessagesCollapsed, setIsMessagesCollapsed] = useState(false)
+  const { state, setters, updateState } = useStage1State()
+  const { conversationData, selectedFields, contextDescription, isMessagesCollapsed } = state
+  const {
+    conversationData: setConversationData,
+    selectedFields: setSelectedFields,
+    contextDescription: setContextDescription,
+    isMessagesCollapsed: setIsMessagesCollapsed
+  } = setters
+
   const [processingStats, setProcessingStats] = useState<ProcessingStats>({
     conversationCount: 0,
     interactionCount: 0,
     tokenCount: 0
   })
   const [error, setError] = useState<string | null>(null)
-
-  // Load state from localStorage on mount
-  useEffect(() => {
-    const savedState = localStorage.getItem('parsing-stage-1-state')
-    if (savedState) {
-      try {
-        const state = JSON.parse(savedState)
-        if (state.conversationData) setConversationData(state.conversationData)
-        if (state.selectedFields) setSelectedFields(state.selectedFields)
-        if (state.contextDescription) setContextDescription(state.contextDescription)
-        if (state.isMessagesCollapsed) setIsMessagesCollapsed(state.isMessagesCollapsed)
-      } catch (e) {
-        console.warn('Failed to restore Stage 1 state:', e)
-      }
-    }
-  }, [])
-
-  // Save state to localStorage when it changes
-  useEffect(() => {
-    if (conversationData) {
-      const state = {
-        conversationData,
-        selectedFields,
-        contextDescription,
-        isMessagesCollapsed
-      }
-      localStorage.setItem('parsing-stage-1-state', JSON.stringify(state))
-    }
-  }, [conversationData, selectedFields, contextDescription, isMessagesCollapsed])
 
   // Calculate statistics whenever selections change
   useEffect(() => {
@@ -110,11 +87,14 @@ export default function Stage1Page() {
       // Use first conversation for display
       const firstConversation: ConversationData = conversations[0]
 
-      setConversationData(firstConversation)
-
       // Initialize with all fields selected
       const allFields = Object.keys(firstConversation)
-      setSelectedFields(allFields)
+
+      // Update state in a single call to avoid race conditions
+      updateState({
+        conversationData: firstConversation,
+        selectedFields: allFields
+      })
 
     } catch (e) {
       setError('Error processing file: Invalid JSON format')
@@ -237,11 +217,11 @@ export default function Stage1Page() {
         </div>
 
         {/* Bottom Section - Processing Statistics and Navigation */}
-        {conversationData && (
-          <div className="mt-ds-large pt-ds-medium border-t border-border-default">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-ds-medium">
+        <div className="mt-ds-large pt-ds-medium border-t border-border-default">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-ds-medium">
 
-              {/* Processing Statistics */}
+            {/* Processing Statistics - only show when file is uploaded */}
+            {conversationData && (
               <div
                 className="grid grid-cols-3 gap-ds-medium text-center"
                 data-testid="processing-stats"
@@ -271,23 +251,23 @@ export default function Stage1Page() {
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Continue Button */}
-              <button
-                onClick={handleContinue}
-                disabled={!canContinue}
-                data-testid="continue-button"
-                className={`px-ds-large py-ds-medium rounded-ds-sm font-medium transition-all duration-200 ${
-                  canContinue
-                    ? 'bg-primary-blue text-white hover:bg-primary-blue-hover focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
-                    : 'bg-border-default text-text-muted cursor-not-allowed'
-                }`}
-              >
-                Continue to Categorization
-              </button>
-            </div>
+            {/* Continue Button - always show, but disable when no file */}
+            <button
+              onClick={handleContinue}
+              disabled={!canContinue}
+              data-testid="continue-button"
+              className={`px-ds-large py-ds-medium rounded-ds-sm font-medium transition-all duration-200 ${
+                canContinue
+                  ? 'bg-primary-blue text-white hover:bg-primary-blue-hover focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
+                  : 'bg-border-default text-text-muted cursor-not-allowed'
+              }`}
+            >
+              Continue to Categorization
+            </button>
           </div>
-        )}
+        </div>
       </main>
     </div>
   )

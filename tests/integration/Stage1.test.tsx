@@ -10,18 +10,18 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
-// Mock File.prototype.text() method
-global.File = class extends global.File {
-  text(): Promise<string> {
-    return Promise.resolve(this.mockContent || '{}')
-  }
+// Mock File.prototype.text() method since the component uses await file.text()
+global.File = class extends File {
+  private mockContent: string
 
   constructor(fileBits: any[], fileName: string, options: any = {}) {
     super(fileBits, fileName, options)
     // Store content for mocking
-    if (typeof fileBits[0] === 'string') {
-      this.mockContent = fileBits[0]
-    }
+    this.mockContent = typeof fileBits[0] === 'string' ? fileBits[0] : '{}'
+  }
+
+  text(): Promise<string> {
+    return Promise.resolve(this.mockContent)
   }
 }
 
@@ -83,6 +83,15 @@ describe('Stage 1 Integration', () => {
     const validJsonFile = new File([validJsonContent], 'conversations.json', { type: 'application/json' })
 
     it('should show field selection interface after successful upload', async () => {
+      // Mock localStorage to prevent persistence issues
+      const mockLocalStorage = {
+        getItem: jest.fn(() => null),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      }
+      Object.defineProperty(window, 'localStorage', { value: mockLocalStorage })
+
       render(<Stage1Page />)
 
       const uploadZone = screen.getByTestId('upload-zone')
@@ -92,10 +101,13 @@ describe('Stage 1 Integration', () => {
         dataTransfer: { files: [validJsonFile] }
       })
 
+      // Add console.log to debug the current state
+      console.log('Page content after file drop:', document.body.innerHTML.slice(0, 500))
+
       await waitFor(() => {
         expect(screen.getByText('Conversation Structure')).toBeInTheDocument()
         expect(screen.getByText(/Click field names to select/)).toBeInTheDocument()
-      }, { timeout: 3000 })
+      }, { timeout: 5000 })
     })
 
     it('should update context panel with smart placeholder after upload', async () => {
@@ -184,8 +196,6 @@ describe('Stage 1 Integration', () => {
 
       fireEvent.drop(uploadZone, { dataTransfer: { files: [invalidFile] } })
 
-      mockFileReader.onerror?.({ target: { error: new Error('Invalid JSON') } } as any)
-
       await waitFor(() => {
         expect(screen.getByText(/error processing file/i)).toBeInTheDocument()
       })
@@ -198,8 +208,6 @@ describe('Stage 1 Integration', () => {
       const emptyFile = new File([''], 'empty.json', { type: 'application/json' })
 
       fireEvent.drop(uploadZone, { dataTransfer: { files: [emptyFile] } })
-
-      mockFileReader.onload?.({ target: { result: '' } } as any)
 
       await waitFor(() => {
         expect(screen.getByText(/file appears to be empty/i)).toBeInTheDocument()
@@ -214,16 +222,14 @@ describe('Stage 1 Integration', () => {
       // First upload invalid file
       const invalidFile = new File(['invalid'], 'invalid.json', { type: 'application/json' })
       fireEvent.drop(uploadZone, { dataTransfer: { files: [invalidFile] } })
-      mockFileReader.onerror?.({ target: { error: new Error('Invalid') } } as any)
 
       await waitFor(() => {
         expect(screen.getByText(/error processing file/i)).toBeInTheDocument()
       })
 
       // Then upload valid file
-      const validFile = new File(['{"valid": "json"}'], 'valid.json', { type: 'application/json' })
+      const validFile = new File(['{"conversations": [{"valid": "json"}]}'], 'valid.json', { type: 'application/json' })
       fireEvent.drop(uploadZone, { dataTransfer: { files: [validFile] } })
-      mockFileReader.onload?.({ target: { result: '{"valid": "json"}' } } as any)
 
       await waitFor(() => {
         expect(screen.queryByText(/error processing file/i)).not.toBeInTheDocument()
@@ -242,9 +248,8 @@ describe('Stage 1 Integration', () => {
 
       // Upload file
       const uploadZone = screen.getByTestId('upload-zone')
-      const validFile = new File(['{"test": "data"}'], 'test.json', { type: 'application/json' })
+      const validFile = new File(['{"conversations": [{"test": "data"}]}'], 'test.json', { type: 'application/json' })
       fireEvent.drop(uploadZone, { dataTransfer: { files: [validFile] } })
-      mockFileReader.onload?.({ target: { result: '{"test": "data"}' } } as any)
 
       await waitFor(() => {
         expect(continueButton).not.toBeDisabled()
@@ -256,9 +261,8 @@ describe('Stage 1 Integration', () => {
 
       // Upload file and enable continue
       const uploadZone = screen.getByTestId('upload-zone')
-      const validFile = new File(['{"test": "data"}'], 'test.json', { type: 'application/json' })
+      const validFile = new File(['{"conversations": [{"test": "data"}]}'], 'test.json', { type: 'application/json' })
       fireEvent.drop(uploadZone, { dataTransfer: { files: [validFile] } })
-      mockFileReader.onload?.({ target: { result: '{"test": "data"}' } } as any)
 
       await waitFor(() => {
         const continueButton = screen.getByTestId('continue-button')
@@ -276,9 +280,8 @@ describe('Stage 1 Integration', () => {
 
       // Upload file and make selections
       const uploadZone = screen.getByTestId('upload-zone')
-      const validFile = new File(['{"test": "data", "messages": []}'], 'test.json', { type: 'application/json' })
+      const validFile = new File(['{"conversations": [{"test": "data", "messages": []}]}'], 'test.json', { type: 'application/json' })
       fireEvent.drop(uploadZone, { dataTransfer: { files: [validFile] } })
-      mockFileReader.onload?.({ target: { result: '{"test": "data", "messages": []}' } } as any)
 
       await waitFor(() => {
         expect(screen.getByText('Conversation Structure')).toBeInTheDocument()

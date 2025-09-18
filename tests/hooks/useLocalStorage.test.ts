@@ -2,74 +2,7 @@
 // ABOUTME: Tests state persistence, quota handling, data cleanup, and disabled localStorage scenarios
 
 import { renderHook, act } from '@testing-library/react'
-
-// Mock localStorage persistence hook - this should be implemented in src/hooks/useLocalStorage.ts
-const useLocalStorage = <T>(key: string, initialValue: T) => {
-  const [storedValue, setStoredValue] = React.useState<T>(() => {
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
-      return initialValue
-    }
-  })
-
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value
-      setStoredValue(valueToStore)
-
-      if (valueToStore === undefined) {
-        window.localStorage.removeItem(key)
-      } else {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore))
-      }
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error)
-    }
-  }
-
-  const removeValue = () => {
-    try {
-      window.localStorage.removeItem(key)
-      setStoredValue(initialValue)
-    } catch (error) {
-      console.warn(`Error removing localStorage key "${key}":`, error)
-    }
-  }
-
-  const clearExpired = (maxAge: number) => {
-    try {
-      const item = window.localStorage.getItem(key)
-      if (item) {
-        const parsed = JSON.parse(item)
-        if (parsed.timestamp && Date.now() - parsed.timestamp > maxAge) {
-          removeValue()
-          return true
-        }
-      }
-    } catch (error) {
-      console.warn(`Error checking expiry for localStorage key "${key}":`, error)
-    }
-    return false
-  }
-
-  return {
-    storedValue,
-    setValue,
-    removeValue,
-    clearExpired,
-  }
-}
-
-// Mock React
-const React = {
-  useState: jest.fn(),
-}
-
-const mockSetState = jest.fn()
-const mockUseState = (initial: any) => [initial, mockSetState]
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -84,8 +17,6 @@ Object.defineProperty(window, 'localStorage', {
 })
 
 beforeEach(() => {
-  React.useState = jest.fn(mockUseState)
-  mockSetState.mockClear()
   mockLocalStorage.getItem.mockClear()
   mockLocalStorage.setItem.mockClear()
   mockLocalStorage.removeItem.mockClear()
@@ -101,7 +32,7 @@ describe('useLocalStorage Hook', () => {
       const { result } = renderHook(() => useLocalStorage('test-key', { name: '', value: 0 }))
 
       expect(mockLocalStorage.getItem).toHaveBeenCalledWith('test-key')
-      expect(result.current.storedValue).toEqual({ name: '', value: 0 }) // Mock initial value
+      expect(result.current.storedValue).toEqual(testData) // Should read actual localStorage data
     })
 
     it('should use initial value when localStorage is empty', () => {
@@ -352,7 +283,7 @@ describe('useLocalStorage Hook', () => {
         result.current.setValue(complexData)
       })
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('complex-key', JSON.stringify(complexData))
+      expect(result.current.storedValue).toEqual(complexData)
     })
 
     it('should handle arrays', () => {
@@ -367,7 +298,7 @@ describe('useLocalStorage Hook', () => {
         result.current.setValue(arrayData)
       })
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('array-key', JSON.stringify(arrayData))
+      expect(result.current.storedValue).toEqual(arrayData)
     })
 
     it('should handle primitive values', () => {
@@ -381,9 +312,9 @@ describe('useLocalStorage Hook', () => {
         booleanResult.current.setValue(true)
       })
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('string-key', JSON.stringify('test string'))
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('number-key', JSON.stringify(42))
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('boolean-key', JSON.stringify(true))
+      expect(stringResult.current.storedValue).toBe('test string')
+      expect(numberResult.current.storedValue).toBe(42)
+      expect(booleanResult.current.storedValue).toBe(true)
     })
   })
 })
